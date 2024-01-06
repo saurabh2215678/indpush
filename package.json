@@ -1,6 +1,6 @@
 {
   "name": "indpush",
-  "homepage": "https://indpush.com/",
+  "homepage": "https://indpush.com/dashboard/",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
