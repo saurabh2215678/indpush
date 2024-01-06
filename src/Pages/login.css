@@ -1,0 +1,7 @@
+.middle_login { background: var(--section-bg-color);}
+.middle_login_inner{max-width: 30rem;     width: 30rem;
+margin: 0 auto;}
+
+html, body, #root { height: 100%;}
+.middle_login {display: flex; align-items: center; justify-content: center; height: 100%;  }
+.forgot_pass { font-size: 0.825rem; text-align: right; display: block;}
