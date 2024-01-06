@@ -15,5 +15,5 @@ jobs:
         username: u749958734.indpush.com
         password: Ind@8675
         server-dir: /public_html/dashboard/test/
-        local-dir: /build/
+        local-dir: build/
         
