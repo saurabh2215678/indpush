@@ -9,7 +9,7 @@ return (
 <div className='middle_login'>
    <div className='middle_login_inner'>
       <div className="custom-block bg-white">
-         <h3 className='mb-3'>LOGO</h3>
+         <h3 className='mb-3'><Link to="/dashboard">LOGO</Link></h3>
          <form className="custom-form profile-form" onSubmit="">
             <input
                className="form-control"

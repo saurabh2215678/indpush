@@ -50,6 +50,23 @@ function App() {
         {/* Other routes */}
 
         <Route
+          path="/dashboard"
+          element={
+            <>
+              {/* Nav is always visible on other pages */}
+              <Nav />
+              <div className="container-fluid">
+                <div className="row">
+                  {/* Header and Login are visible on other pages */}
+                  <Header />
+                  <Dashboard />
+                </div>
+              </div>
+            </>
+          }
+        />
+        
+        <Route
           path="/*"
           element={
             <>
