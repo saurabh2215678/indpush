@@ -106,15 +106,20 @@ function findUser($params){
 
     // Prepare and execute the query
     $query = $wpdb->prepare(
-        "SELECT * FROM $table_name WHERE user_email = %s AND user_password = %s",
+        "SELECT * FROM $table_name WHERE email = %s AND password = %s",
         $email,
         $password
     );
 
     $user = $wpdb->get_row($query);
 
-    return $user;
+    if ($user) {
+        return array('message' => 'User found', 'user' => $user);
+    } else {
+        return array('message' => 'User not found');
+    }
 }
+
 
 
 
