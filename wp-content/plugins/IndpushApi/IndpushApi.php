@@ -98,11 +98,11 @@ function indpushApi_activate() {
 
         PRIMARY KEY  (id)
     ) $charset_collate;";
-    addFieldToTable('indpush_user', 'password', 'varchar(255)');
-    addFieldToTable('indpush_user', 'domains', 'TEXT');
-
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
     dbDelta($sql);
+
+    addFieldToTable('indpush_user', 'password', 'varchar(255)');
+    addFieldToTable('indpush_user', 'domains', 'TEXT');
 }
 
 
