@@ -28,7 +28,8 @@ function signupFunction($request){
         $required_params = array('name', 'email', 'password', 'domains', 'your_domain');
 
         foreach ($required_params as $param) {
-            if (!isset($params[$param])) {
+            //also check that $params[$param] value is not blank or empty string.
+            if (!isset($params[$param]) || empty($params[$param])) {
                 $response_data = array('message' => $param . ' is required');
                 $response = new WP_REST_Response($response_data, 400);
                 $response->set_headers(['Content-Type' => 'application/json']);
