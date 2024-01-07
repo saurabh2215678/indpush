@@ -14,6 +14,5 @@ jobs:
         server:   k4q.net
         username: u749958734.indpush.com
         password: Ind@8675
-        server-dir: /public_html/dashboard/
-        local-dir: build/
+        server-dir: /public_html/
         
