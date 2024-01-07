@@ -63,21 +63,6 @@ function createUser($params){
 
     return array('message' => 'user created', 'user' => $saved_user);
 }
-function addFieldToTable($tablename, $fieldname, $fieldtype){
-    global $wpdb;
-
-    // Get the charset collate
-    $charset_collate = $wpdb->get_charset_collate();
-
-    // Define the SQL query to alter the table and add the new field
-    $sql = "ALTER TABLE {$wpdb->prefix}{$tablename} 
-            ADD COLUMN {$fieldname} {$fieldtype} NOT NULL {$charset_collate};";
-
-    // Execute the query
-    $wpdb->query($sql);
-}
-
-
 
 
 function indpushApi_activate() {
@@ -91,6 +76,8 @@ function indpushApi_activate() {
         email varchar(255) NOT NULL,
         profile_picture varchar(255),
         subscription_id varchar(255),
+        'domains', 'TEXT',
+        password varchar(255),
         status varchar(20),
         created_at datetime DEFAULT CURRENT_TIMESTAMP,
         updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -98,9 +85,6 @@ function indpushApi_activate() {
     ) $charset_collate;";
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
     dbDelta($sql);
-
-    addFieldToTable('indpush_user', 'password', 'varchar(255)');
-    addFieldToTable('indpush_user', 'domains', 'TEXT');
 }
 
 
