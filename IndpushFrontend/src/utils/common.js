@@ -1,0 +1,1 @@
+export const apiURI = 'https://indpush.com/wp-json/api';
