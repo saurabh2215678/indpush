@@ -21,7 +21,7 @@ function signupFunction($request){
     } elseif ($request->get_method() === 'POST') {
         $params = $request->get_params();
 
-        $required_params = array('name', 'email');
+        $required_params = array('name', 'email', 'password', 'domains', 'my_domain');
 
         foreach ($required_params as $param) {
             if (!isset($params[$param])) {
@@ -39,6 +39,32 @@ function signupFunction($request){
     }
 }
 
+function loginFunction($request){
+    if ($request->get_method() === 'GET') {
+        $data = array('message' => 'Method not allowed');
+        $response = new WP_REST_Response($data, 400);
+        $response->set_headers(['Content-Type' => 'application/json']);
+        return $response;
+    } elseif ($request->get_method() === 'POST') {
+        $params = $request->get_params();
+
+        $required_params = array('email', 'password');
+
+        foreach ($required_params as $param) {
+            if (!isset($params[$param])) {
+                $response_data = array('message' => $param . ' is required');
+                $response = new WP_REST_Response($response_data, 400);
+                $response->set_headers(['Content-Type' => 'application/json']);
+                return $response;
+            }
+        }
+
+        $response_data = findUser($params);
+        $response = new WP_REST_Response($response_data, 200);
+        $response->set_headers(['Content-Type' => 'application/json']);
+        return $response;
+    }
+}
 
 function createUser($params){
     global $wpdb;
@@ -48,8 +74,11 @@ function createUser($params){
         'name' => sanitize_text_field($params['name']),
         'email' => sanitize_email($params['email']),
         'profile_picture' => isset($params['profile-picture']) ? sanitize_text_field($params['profile-picture']) : '',
-        'subscription_id' => '', // Assuming subscription_id is not provided in $params
-        'status' => 'active', // Default status is 'active'
+        'subscription_id' => '',
+        'password' => sanitize_text_field($params['password']),
+        'domains' => sanitize_text_field($params['domains']),
+        'user_domain' => sanitize_text_field($params['my_domain']),
+        'status' => 'active',
         'created_at' => current_time('mysql', true),
         'updated_at' => current_time('mysql', true)
     );
@@ -64,6 +93,26 @@ function createUser($params){
     return array('message' => 'user created', 'user' => $saved_user);
 }
 
+function findUser($params){
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'indpush_user';
+
+    $email = sanitize_text_field($params['email']);
+    $password = sanitize_text_field($params['password']);
+
+    // Prepare and execute the query
+    $query = $wpdb->prepare(
+        "SELECT * FROM $table_name WHERE user_email = %s AND user_password = %s",
+        $email,
+        $password
+    );
+
+    $user = $wpdb->get_row($query);
+
+    return $user;
+}
+
+
 
 function indpushApi_activate() {
     global $wpdb;
@@ -76,7 +125,8 @@ function indpushApi_activate() {
         email varchar(255) NOT NULL,
         profile_picture varchar(255),
         subscription_id varchar(255),
-        'domains', 'TEXT',
+        user_domain TEXT,
+        domains TEXT,
         password varchar(255),
         status varchar(20),
         created_at datetime DEFAULT CURRENT_TIMESTAMP,
