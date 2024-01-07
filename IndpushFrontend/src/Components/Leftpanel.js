@@ -1,8 +1,17 @@
 import React from 'react'
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 
-function Header() {
+function Header({user, setUser}) {
+  const navigate = useNavigate();
+  if(!user){
+    navigate('/login') 
+  }
+  function logout(){
+    localStorage.removeItem('user');
+    setUser(null);
+    navigate('/login') 
+  }
   return (
     <nav id="sidebarMenu" className="col-md-3 col-lg-3 d-md-block sidebar collapse">
       <div className="position-sticky py-4 px-3 sidebar-sticky">
@@ -57,7 +66,7 @@ function Header() {
           </li>
 
           <li className="nav-item border-top mt-auto pt-2">
-            <a className="nav-link" href="#">
+            <a className="nav-link" onClick={logout} href="#">
               <i className="bi-box-arrow-left me-2"></i>
               Logout
             </a>

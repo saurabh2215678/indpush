@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect,useState } from 'react';
 import Header from './Components/Leftpanel';
 import Nav from './Components/Nav';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
@@ -10,6 +10,17 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
+  const [user, setUser] = useState();
+  useEffect(()=>{
+    const lsUser = localStorage.getItem('user');
+    if(lsUser){
+      setUser(JSON.parse(lsUser));
+    }
+    else{
+      setUser(null)
+    }
+  },[])
+
   return (
     <div>
     <Router>
@@ -21,21 +32,21 @@ function App() {
               <div className="container-fluid">
                 <div className="row">
                   {/* Header and Login are visible on other pages */}
-                  <Header />
+                  <Header setUser={setUser} user={user} />
                   <Dashboard />
                 </div>
               </div>
             </>} />
-                <Route
-                    path="*"
-                    element={<PageNotFound />}
-                />
+        <Route
+              path="*"
+              element={<PageNotFound />}
+          />
         <Route
           path="/login"
           element={
             <>
               {/* Nav is always visible */}
-                    <Login />
+                    <Login setUser={setUser} user={user} />
                  
             </>
           }
@@ -46,7 +57,7 @@ function App() {
           element={
             <>
               {/* Nav is always visible */}
-              <Signup />
+              <Signup setUser={setUser} user={user}  />
             </>
           }
         />
@@ -61,7 +72,7 @@ function App() {
               <div className="container-fluid">
                 <div className="row">
                   {/* Header and Login are visible on other pages */}
-                  <Header />
+                  <Header setUser={setUser} user={user}  />
                   <Dashboard />
                 </div>
               </div>
@@ -78,7 +89,7 @@ function App() {
               <div className="container-fluid">
                 <div className="row">
                   {/* Header and Login are visible on other pages */}
-                  <Header />
+                  <Header setUser={setUser} user={user}  />
                   <Dashboard />
                 </div>
               </div>

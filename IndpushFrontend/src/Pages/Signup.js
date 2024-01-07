@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 
 
 
-function Signup() {
+function Signup({user, setUser}) {
 
    const [name, setName] = useState('');
    const [mobile, setMobile] = useState('');
@@ -17,6 +17,9 @@ function Signup() {
 
    
    const navigate = useNavigate();
+   if(user){
+      navigate('/dashboard');
+   }
 
    // const SignupData=()=>{
    //    let signupItem = {name,mobile,email}
@@ -43,10 +46,13 @@ function Signup() {
       });
       const data = await result.json();
       // Convert the object to a JSON string
-      const dataString = JSON.stringify(data);
+      
       console.log(result)
       console.log('data', data);
       if(result.status ==200){
+         const user = JSON.stringify(data);
+         localStorage.setItem('user', user);
+         setUser(user);
       toast.success(data.message);
         navigate('/dashboard') 
       }

@@ -1,33 +1,67 @@
 // Pages/Login.js
-import React from 'react';
+import React, { useState } from 'react';
 import './login.css'; 
-import { Link } from 'react-router-dom';
+import { apiURI } from '../utils/common';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 
-const Login = () => {
+const Login = ({user, setUser}) => {
+   const [email, setEmail] = useState('');
+   const [password, setPassword] = useState('');
+   const navigate = useNavigate();
+
+   if(user){
+      navigate('/dashboard');
+   }
+
+   const LoginData = async ()=> {
+
+      const result = await fetch(`${apiURI}/login`, {
+       method:'post',
+       // body: JSON.stringify({name,mobile,email}),
+       body: new URLSearchParams({
+          email,
+          password
+       }),
+       headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          }
+       });
+       const data = await result.json();
+       // Convert the object to a JSON string
+       
+       console.log(result)
+       console.log('data', data);
+       if(result.status ==200){
+          const user = JSON.stringify(data);
+          localStorage.setItem('user', user);
+          setUser(user);
+       toast.success(data.message);
+         navigate('/dashboard') 
+       }
+       else{
+          toast.error(data.message);
+       }
+       // Store the JSON string in localStorage under a specific key
+       // localStorage.setItem('myDataKey', dataString);
+       
+       // navigate('/dashboard')
+       
+    }
+   
 return (
 <div className='middle_login'>
    <div className='middle_login_inner'>
       <div className="custom-block bg-white">
          <h3 className='mb-3'><Link to="/dashboard">LOGO</Link></h3>
-         <form className="custom-form profile-form" onSubmit="">
-            <input
-               className="form-control"
-               type="text"
-               name="profile-name"
-               id="profile-name"
-               placeholder="User Name"
-               />
-            <input
-               className="form-control mb-0"
-               type="password"
-               name="profile-email"
-               id="profile-email"
-               placeholder="password"
-               />
+         <div className="custom-form profile-form" onSubmit="">
+             <input className="form-control" onChange={(e)=>setEmail(e.target.value)}  type="text" name="profile-name" id="profile-name" placeholder="Email Id" />
+            
+               <input className="form-control" onChange={(e)=>setPassword(e.target.value)}  type="password" name="password" id="password" placeholder="Password" />
                 <a className='mt-1 mb-4 forgot_pass' href="#!">Forgot password?</a>
             <div className="d-flex">
-               <button type="submit" className="form-control ms-2">
+               <button type="submit"  onClick={LoginData} className="form-control ms-2">
                Login
                </button>
             </div>
@@ -35,7 +69,7 @@ return (
             
     <p>Not a member? <Link to="/signup">Register</Link></p>
     </div>
-         </form>
+         </div>
       </div>
    </div>
 </div>
