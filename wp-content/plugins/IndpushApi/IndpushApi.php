@@ -74,8 +74,7 @@ function addFieldToTable($tablename, $fieldname, $fieldtype){
             ADD COLUMN {$fieldname} {$fieldtype} NOT NULL {$charset_collate};";
 
     // Execute the query
-    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-    dbDelta($sql);
+    $wpdb->query($sql);
 }
 
 
@@ -95,7 +94,6 @@ function indpushApi_activate() {
         status varchar(20),
         created_at datetime DEFAULT CURRENT_TIMESTAMP,
         updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
         PRIMARY KEY  (id)
     ) $charset_collate;";
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
