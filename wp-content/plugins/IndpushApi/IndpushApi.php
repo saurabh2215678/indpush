@@ -21,7 +21,7 @@ function signupFunction($request){
     } elseif ($request->get_method() === 'POST') {
         $params = $request->get_params();
 
-        $required_params = array('name', 'email', 'profile-picture');
+        $required_params = array('name', 'email');
 
         foreach ($required_params as $param) {
             if (!isset($params[$param])) {
@@ -40,9 +40,30 @@ function signupFunction($request){
 }
 
 
-function createUser(){
-    return array('message' => 'user created');
+function createUser($params){
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'indpush_user';
+
+    $user_data = array(
+        'name' => sanitize_text_field($params['name']),
+        'email' => sanitize_email($params['email']),
+        'profile_picture' => isset($params['profile-picture']) ? sanitize_text_field($params['profile-picture']) : '',
+        'subscription_id' => '', // Assuming subscription_id is not provided in $params
+        'status' => 'active', // Default status is 'active'
+        'created_at' => current_time('mysql', true),
+        'updated_at' => current_time('mysql', true)
+    );
+
+    $wpdb->insert($table_name, $user_data);
+    
+    $user_id = $wpdb->insert_id;
+
+    // Retrieve the saved user
+    $saved_user = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $user_id), ARRAY_A);
+
+    return array('message' => 'user created', 'user' => $saved_user);
 }
+
 
 function indpushApi_activate() {
     global $wpdb;
