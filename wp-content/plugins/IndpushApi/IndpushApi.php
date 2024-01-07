@@ -25,7 +25,7 @@ function signupFunction($request){
     } elseif ($request->get_method() === 'POST') {
         $params = $request->get_params();
 
-        $required_params = array('name', 'email', 'password', 'domains', 'my_domain');
+        $required_params = array('name', 'email', 'password', 'domains', 'your_domain');
 
         foreach ($required_params as $param) {
             if (!isset($params[$param])) {
@@ -81,7 +81,7 @@ function createUser($params){
         'subscription_id' => '',
         'password' => sanitize_text_field($params['password']),
         'domains' => sanitize_text_field($params['domains']),
-        'user_domain' => sanitize_text_field($params['my_domain']),
+        'user_domain' => sanitize_text_field($params['your_domain']),
         'status' => 'active',
         'created_at' => current_time('mysql', true),
         'updated_at' => current_time('mysql', true)
