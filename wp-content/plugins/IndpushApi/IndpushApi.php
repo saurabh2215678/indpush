@@ -10,6 +10,10 @@ function indpushApi() {
         'methods' => array('GET', 'POST'),
         'callback' => 'signupFunction',
     ));
+    register_rest_route('api', '/login', array(
+        'methods' => array('GET', 'POST'),
+        'callback' => 'loginFunction',
+    ));
 
 }
 function signupFunction($request){
