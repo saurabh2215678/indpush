@@ -20,17 +20,28 @@ function signupFunction($request){
         return $response;
     } elseif ($request->get_method() === 'POST') {
         $params = $request->get_params();
-        if (isset($params['post_slug'])) {
-            $response_data = array('message' => 'user creaded!!');
-            $response = new WP_REST_Response($response_data, 200);
-        } else {
-            $response_data = array('message' => 'post_slug is required');
-            $response = new WP_REST_Response($response_data, 400);
+
+        $required_params = array('name', 'email', 'profile-picture');
+
+        foreach ($required_params as $param) {
+            if (!isset($params[$param])) {
+                $response_data = array('message' => $param . ' is required');
+                $response = new WP_REST_Response($response_data, 400);
+                $response->set_headers(['Content-Type' => 'application/json']);
+                return $response;
+            }
         }
 
+        $response_data = createUser($params);
+        $response = new WP_REST_Response($response_data, 200);
         $response->set_headers(['Content-Type' => 'application/json']);
         return $response;
     }
+}
+
+
+function createUser(){
+    return array('message' => 'user created');
 }
 
 function indpushApi_activate() {
