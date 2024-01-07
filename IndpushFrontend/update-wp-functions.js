@@ -12,6 +12,7 @@ const builddPath = path.resolve(__dirname, 'build');
 const imagesPath = path.resolve(builddPath, 'images');
 const fontsPath = path.resolve(builddPath, 'fonts');
 const targetPath = path.resolve(__dirname, '../');
+const targetBuildPath = path.resolve(__dirname, '../wp-content/themes/indpush/');
 
 if (!mainJsFile) {
   console.error('Main JavaScript file not found in the build directory.');
@@ -68,6 +69,7 @@ if (!fs.existsSync(fontsPath)) {
 // Define the path where you want to copy the 'images' folder
 const targetImagesPath = path.resolve(targetPath, 'images');
 const targetFontsPath = path.resolve(targetPath, 'fonts');
+const targetProjectPath = path.resolve(targetBuildPath, 'build');
 
 // Create the destination directory if it doesn't exist
 if (!fs.existsSync(targetImagesPath)) {
@@ -80,5 +82,7 @@ if (!fs.existsSync(targetFontsPath)) {
 // Copy the 'images' folder from build to the target path
 fse.copySync(imagesPath, targetImagesPath);
 fse.copySync(fontsPath, targetFontsPath);
+fse.emptyDirSync(targetProjectPath);
+fse.copySync(builddPath, targetProjectPath);
 
 console.log('Images folder copied successfully.');

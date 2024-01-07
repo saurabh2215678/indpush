@@ -17,7 +17,7 @@ function Header() {
           <li className="nav-item">
             <a className="nav-link" href="#">
               <i className="bi-wallet me-2"></i>
-              My Domain
+              My Domainn
             </a>
           </li>
 
