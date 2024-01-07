@@ -1,6 +1,23 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 
 function Dashboard() {
+    useEffect(()=>{
+        fetchApi();
+    },[]);
+    async function fetchApi(){
+        const apiuri = 'https://indpush.com/wp-json/api/signup';
+        const response = await fetch(apiuri, {
+            method: "POST",
+            body: new URLSearchParams({'post_slug':'helo'}),
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            }
+        });
+       
+        const data = await response.json();
+        console.log('data', data);
+    }
+
   return (
     <main className="main-wrapper col-md-9 ms-sm-auto py-4 col-lg-9 px-md-4 border-start">
                     <div className="title-group mb-3">
