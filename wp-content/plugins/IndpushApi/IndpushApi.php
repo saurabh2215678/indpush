@@ -65,7 +65,12 @@ function loginFunction($request){
         }
 
         $response_data = findUser($params);
-        $response = new WP_REST_Response($response_data, 200);
+        if($response_data['message'] == 'User not found'){
+            $response = new WP_REST_Response($response_data, 400);
+        }else{
+            $response = new WP_REST_Response($response_data, 200);
+        }
+        
         $response->set_headers(['Content-Type' => 'application/json']);
         return $response;
     }
