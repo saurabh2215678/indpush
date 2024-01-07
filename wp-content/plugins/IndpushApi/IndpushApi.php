@@ -76,7 +76,7 @@ function createUser($params){
 
     $user_data = array(
         'name' => sanitize_text_field($params['name']),
-        'email' => sanitize_email($params['email']),
+        'email' => sanitize_text_field($params['email']),
         'profile_picture' => isset($params['profile-picture']) ? sanitize_text_field($params['profile-picture']) : '',
         'subscription_id' => '',
         'password' => sanitize_text_field($params['password']),
