@@ -6,9 +6,12 @@ import Login from './Pages/Login.js';
 import Signup from './Pages/Signup.js';
 import Dashboard from './Pages/Dashboard.js';
 import PageNotFound from './Pages/PageNotFound.js';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   return (
+    <div>
     <Router>
       <Routes>
         {/* Route for the login page */}
@@ -84,6 +87,8 @@ function App() {
         />
       </Routes>
     </Router>
+    <ToastContainer />
+    </div>
   );
 }
 
