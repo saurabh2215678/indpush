@@ -10,6 +10,10 @@ function indpushApi() {
         'methods' => array('GET', 'POST'),
         'callback' => 'signupFunction',
     ));
+    register_rest_route('api', '/login', array(
+        'methods' => array('GET', 'POST'),
+        'callback' => 'loginFunction',
+    ));
 
 }
 function signupFunction($request){
@@ -21,10 +25,11 @@ function signupFunction($request){
     } elseif ($request->get_method() === 'POST') {
         $params = $request->get_params();
 
-        $required_params = array('name', 'email');
+        $required_params = array('name', 'email', 'password', 'domains', 'your_domain');
 
         foreach ($required_params as $param) {
-            if (!isset($params[$param])) {
+            //also check that $params[$param] value is not blank or empty string.
+            if (!isset($params[$param]) || empty($params[$param])) {
                 $response_data = array('message' => $param . ' is required');
                 $response = new WP_REST_Response($response_data, 400);
                 $response->set_headers(['Content-Type' => 'application/json']);
@@ -39,6 +44,32 @@ function signupFunction($request){
     }
 }
 
+function loginFunction($request){
+    if ($request->get_method() === 'GET') {
+        $data = array('message' => 'Method not allowed');
+        $response = new WP_REST_Response($data, 400);
+        $response->set_headers(['Content-Type' => 'application/json']);
+        return $response;
+    } elseif ($request->get_method() === 'POST') {
+        $params = $request->get_params();
+
+        $required_params = array('email', 'password');
+
+        foreach ($required_params as $param) {
+            if (!isset($params[$param])) {
+                $response_data = array('message' => $param . ' is required');
+                $response = new WP_REST_Response($response_data, 400);
+                $response->set_headers(['Content-Type' => 'application/json']);
+                return $response;
+            }
+        }
+
+        $response_data = findUser($params);
+        $response = new WP_REST_Response($response_data, 200);
+        $response->set_headers(['Content-Type' => 'application/json']);
+        return $response;
+    }
+}
 
 function createUser($params){
     global $wpdb;
@@ -46,10 +77,13 @@ function createUser($params){
 
     $user_data = array(
         'name' => sanitize_text_field($params['name']),
-        'email' => sanitize_email($params['email']),
+        'email' => sanitize_text_field($params['email']),
         'profile_picture' => isset($params['profile-picture']) ? sanitize_text_field($params['profile-picture']) : '',
-        'subscription_id' => '', // Assuming subscription_id is not provided in $params
-        'status' => 'active', // Default status is 'active'
+        'subscription_id' => '',
+        'password' => sanitize_text_field($params['password']),
+        'domains' => sanitize_text_field($params['domains']),
+        'user_domain' => sanitize_text_field($params['your_domain']),
+        'status' => 'active',
         'created_at' => current_time('mysql', true),
         'updated_at' => current_time('mysql', true)
     );
@@ -64,6 +98,31 @@ function createUser($params){
     return array('message' => 'user created', 'user' => $saved_user);
 }
 
+function findUser($params){
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'indpush_user';
+
+    $email = sanitize_text_field($params['email']);
+    $password = sanitize_text_field($params['password']);
+
+    // Prepare and execute the query
+    $query = $wpdb->prepare(
+        "SELECT * FROM $table_name WHERE email = %s AND password = %s",
+        $email,
+        $password
+    );
+
+    $user = $wpdb->get_row($query);
+
+    if ($user) {
+        return array('message' => 'User found', 'user' => $user);
+    } else {
+        return array('message' => 'User not found');
+    }
+}
+
+
+
 
 function indpushApi_activate() {
     global $wpdb;
@@ -76,16 +135,19 @@ function indpushApi_activate() {
         email varchar(255) NOT NULL,
         profile_picture varchar(255),
         subscription_id varchar(255),
+        user_domain TEXT,
+        domains TEXT,
+        password varchar(255),
         status varchar(20),
         created_at datetime DEFAULT CURRENT_TIMESTAMP,
         updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
         PRIMARY KEY  (id)
     ) $charset_collate;";
-
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
     dbDelta($sql);
 }
+
+
 function indpushApi_deactivate() {
 
 }
