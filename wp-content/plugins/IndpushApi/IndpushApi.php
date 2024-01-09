@@ -131,30 +131,31 @@ function findUser($params){
 }
 
 function saveFirebaseCredentials($params){
-    global $wpdb;
-    $table_name = $wpdb->prefix . 'indpush_user';
+    if ($request->get_method() === 'GET') {
+        $data = array('message' => 'Method not allowed');
+        $response = new WP_REST_Response($data, 400);
+        $response->set_headers(['Content-Type' => 'application/json']);
+        return $response;
+    } elseif ($request->get_method() === 'POST') {
+        $params = $request->get_params();
 
-    $user_data = array(
-        'name' => sanitize_text_field($params['name']),
-        'email' => sanitize_text_field($params['email']),
-        'profile_picture' => isset($params['profile-picture']) ? sanitize_text_field($params['profile-picture']) : '',
-        'subscription_id' => '',
-        'password' => sanitize_text_field($params['password']),
-        'domains' => sanitize_text_field($params['domains']),
-        'user_domain' => sanitize_text_field($params['your_domain']),
-        'status' => 'active',
-        'created_at' => current_time('mysql', true),
-        'updated_at' => current_time('mysql', true)
-    );
+        $required_params = array('name', 'email', 'password', 'domains', 'your_domain');
 
-    $wpdb->insert($table_name, $user_data);
-    
-    $user_id = $wpdb->insert_id;
+        foreach ($required_params as $param) {
+            //also check that $params[$param] value is not blank or empty string.
+            if (!isset($params[$param]) || empty($params[$param])) {
+                $response_data = array('message' => $param . ' is required');
+                $response = new WP_REST_Response($response_data, 400);
+                $response->set_headers(['Content-Type' => 'application/json']);
+                return $response;
+            }
+        }
 
-    // Retrieve the saved user
-    $saved_user = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $user_id), ARRAY_A);
-
-    return array('message' => 'user created', 'user' => $saved_user);
+        $response_data = createUser($params);
+        $response = new WP_REST_Response($response_data, 200);
+        $response->set_headers(['Content-Type' => 'application/json']);
+        return $response;
+    }
 }
 
 function createUserTable(){
