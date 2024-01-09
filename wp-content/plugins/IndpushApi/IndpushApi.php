@@ -14,6 +14,10 @@ function indpushApi() {
         'methods' => array('GET', 'POST'),
         'callback' => 'loginFunction',
     ));
+    register_rest_route('api', '/firebase-credentials', array(
+        'methods' => array('GET', 'POST'),
+        'callback' => 'firebaseCredentials',
+    ));
 
 }
 function signupFunction($request){
@@ -126,10 +130,34 @@ function findUser($params){
     }
 }
 
+function saveFirebaseCredentials($params){
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'indpush_user';
 
+    $user_data = array(
+        'name' => sanitize_text_field($params['name']),
+        'email' => sanitize_text_field($params['email']),
+        'profile_picture' => isset($params['profile-picture']) ? sanitize_text_field($params['profile-picture']) : '',
+        'subscription_id' => '',
+        'password' => sanitize_text_field($params['password']),
+        'domains' => sanitize_text_field($params['domains']),
+        'user_domain' => sanitize_text_field($params['your_domain']),
+        'status' => 'active',
+        'created_at' => current_time('mysql', true),
+        'updated_at' => current_time('mysql', true)
+    );
 
+    $wpdb->insert($table_name, $user_data);
+    
+    $user_id = $wpdb->insert_id;
 
-function indpushApi_activate() {
+    // Retrieve the saved user
+    $saved_user = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $user_id), ARRAY_A);
+
+    return array('message' => 'user created', 'user' => $saved_user);
+}
+
+function createUserTable(){
     global $wpdb;
     $table_name = $wpdb->prefix . 'indpush_user';
     $charset_collate = $wpdb->get_charset_collate();
@@ -150,6 +178,30 @@ function indpushApi_activate() {
     ) $charset_collate;";
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
     dbDelta($sql);
+}
+
+function createFirebaseTable(){
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'indpush_firebase';
+    $charset_collate = $wpdb->get_charset_collate();
+
+    $sql = "CREATE TABLE IF NOT EXISTS $table_name (
+        id mediumint(9) NOT NULL AUTO_INCREMENT,
+        config TEXT,
+        serverkey TEXT,
+        vapid TEXT,
+        userId mediumint(9),
+        created_at datetime DEFAULT CURRENT_TIMESTAMP,
+        updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY  (id)
+    ) $charset_collate;";
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql);
+}
+
+function indpushApi_activate() {
+    createUserTable();
+    createFirebaseTable();
 }
 
 
