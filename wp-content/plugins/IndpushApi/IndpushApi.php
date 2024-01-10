@@ -17,13 +17,6 @@ function indpushApi() {
     register_rest_route('api', '/firebase-credentials', array(
         'methods' => array('GET', 'POST'),
         'callback' => 'firebaseCredentials',
-        'args' => array(
-            'userId' => array(
-                'validate_callback' => function($param, $request, $key) {
-                    return is_numeric($param);
-                }
-            ),
-        ),
     ));
 }
 function signupFunction($request){
@@ -139,7 +132,8 @@ function findUser($params){
 function firebaseCredentials($params){
     $params = $request->get_params();
     if ($request->get_method() === 'GET') {
-        $data = array('message' => 'my message', 'userId' => 'test');
+        $user_id = $request->get_param('userId');
+        $data = array('message' => 'my message', 'userId' => $user_id);
         $response = new WP_REST_Response($data, 400);
         $response->set_headers(['Content-Type' => 'application/json']);
         return $response;
