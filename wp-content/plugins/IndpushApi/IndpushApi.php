@@ -139,8 +139,7 @@ function findUser($params){
 function firebaseCredentials($params){
     $params = $request->get_params();
     if ($request->get_method() === 'GET') {
-        $user_id = $request->get_param('userId');
-        $data = array('message' => 'my message', 'userId' => $user_id);
+        $data = array('message' => 'my message', 'userId' => 'test');
         $response = new WP_REST_Response($data, 400);
         $response->set_headers(['Content-Type' => 'application/json']);
         return $response;
