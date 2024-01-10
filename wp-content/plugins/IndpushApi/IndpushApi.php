@@ -17,6 +17,13 @@ function indpushApi() {
     register_rest_route('api', '/firebase-credentials', array(
         'methods' => array('GET', 'POST'),
         'callback' => 'firebaseCredentials',
+        'args' => array(
+            'userId' => array(
+                'validate_callback' => function($param, $request, $key) {
+                    return is_numeric($param);
+                }
+            ),
+        ),
     ));
 }
 function signupFunction($request){
