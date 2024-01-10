@@ -130,14 +130,14 @@ function findUser($params){
     }
 }
 
-function saveFirebaseCredentials($params){
+function firebaseCredentials($params){
+    $params = $request->get_params();
     if ($request->get_method() === 'GET') {
-        $data = array('message' => 'Method not allowed');
+        $data = array('message' => 'Method not allowed', 'userId' => $params['userId']);
         $response = new WP_REST_Response($data, 400);
         $response->set_headers(['Content-Type' => 'application/json']);
         return $response;
     } elseif ($request->get_method() === 'POST') {
-        $params = $request->get_params();
 
         $required_params = array('name', 'email', 'password', 'domains', 'your_domain');
 
