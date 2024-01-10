@@ -16,11 +16,11 @@ function indpushApi() {
     ));
     register_rest_route('api', '/firebase-data', array(
         'methods' => array('GET', 'POST'),
-        'callback' => 'signupFunction',
+        'callback' => 'firebasedata',
     ));
     register_rest_route('api', '/firebase-data-upload', array(
         'methods' => array('GET', 'POST'),
-        'callback' => 'signupFunction',
+        'callback' => 'firebasedataupload',
     ));
 }
 function signupFunction($request){
@@ -133,7 +133,7 @@ function findUser($params){
     }
 }
 
-function firebasedata($params){
+function firebasedata($request){
     if ($request->get_method() === 'GET') {
         $data = array('message' => 'Method not allowed');
         $response = new WP_REST_Response($data, 400);
@@ -161,7 +161,7 @@ function firebasedata($params){
     }
 }
 
-function firebasedataupload($params){
+function firebasedataupload($request){
     if ($request->get_method() === 'GET') {
         $data = array('message' => 'Method not allowed');
         $response = new WP_REST_Response($data, 400);
