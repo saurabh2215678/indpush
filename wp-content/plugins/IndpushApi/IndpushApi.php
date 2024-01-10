@@ -18,7 +18,6 @@ function indpushApi() {
         'methods' => array('GET', 'POST'),
         'callback' => 'firebaseCredentials',
     ));
-
 }
 function signupFunction($request){
     if ($request->get_method() === 'GET') {
@@ -133,16 +132,14 @@ function findUser($params){
 function firebaseCredentials($params){
     $params = $request->get_params();
     if ($request->get_method() === 'GET') {
-        $data = array('message' => 'Method not allowed', 'userId' => $params['userId']);
+        $user_id = $request->get_param('userId');
+        $data = array('message' => 'my message', 'userId' => $user_id);
         $response = new WP_REST_Response($data, 400);
         $response->set_headers(['Content-Type' => 'application/json']);
         return $response;
     } elseif ($request->get_method() === 'POST') {
-
-        $required_params = array('name', 'email', 'password', 'domains', 'your_domain');
-
+        $required_params = array('config', 'serverkey', 'vapid', 'userId');
         foreach ($required_params as $param) {
-            //also check that $params[$param] value is not blank or empty string.
             if (!isset($params[$param]) || empty($params[$param])) {
                 $response_data = array('message' => $param . ' is required');
                 $response = new WP_REST_Response($response_data, 400);
@@ -150,8 +147,7 @@ function firebaseCredentials($params){
                 return $response;
             }
         }
-
-        $response_data = createUser($params);
+        $response_data = saveFirebaseData($params);
         $response = new WP_REST_Response($response_data, 200);
         $response->set_headers(['Content-Type' => 'application/json']);
         return $response;
