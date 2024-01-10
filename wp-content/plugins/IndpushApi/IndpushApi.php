@@ -16,11 +16,11 @@ function indpushApi() {
     ));
     register_rest_route('api', '/firebase-data', array(
         'methods' => array('GET', 'POST'),
-        'callback' => 'firebasedata',
+        'callback' => 'signupFunction',
     ));
     register_rest_route('api', '/firebase-data-upload', array(
         'methods' => array('GET', 'POST'),
-        'callback' => 'firebasedataupload',
+        'callback' => 'signupFunction',
     ));
 }
 function signupFunction($request){
