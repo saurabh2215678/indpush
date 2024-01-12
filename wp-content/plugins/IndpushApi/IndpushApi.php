@@ -22,6 +22,15 @@ function indpushApi() {
         'methods' => array('GET', 'POST'),
         'callback' => 'firebasedataupload',
     ));
+    register_rest_route('api', '/verify-otp', array(
+        'methods' => array('GET', 'POST'),
+        'callback' => 'verifyotp',
+    ));
+    register_rest_route('api', '/resend-otp', array(
+        'methods' => array('GET', 'POST'),
+        'callback' => 'resendOtp',
+    ));
+
 }
 function signupFunction($request){
     if ($request->get_method() === 'GET') {
@@ -86,6 +95,85 @@ function loginFunction($request){
     }
 }
 
+function verifyotp($request){
+    if ($request->get_method() === 'GET') {
+        $data = array('message' => 'Method not allowed');
+        $response = new WP_REST_Response($data, 400);
+        $response->set_headers(['Content-Type' => 'application/json']);
+        return $response;
+    } elseif ($request->get_method() === 'POST') {
+        $params = $request->get_params();
+
+        $required_params = array('email', 'otp');
+
+        $missing_params = array_filter($required_params, function($param) use ($params) {
+            return !isset($params[$param]) || empty($params[$param]);
+        });
+
+        if (!empty($missing_params)) {
+            $data = array('message' => 'Required parameters missing or empty', 'missing_params' => $missing_params);
+            $response = new WP_REST_Response($data, 400);
+            $response->set_headers(['Content-Type' => 'application/json']);
+            return $response;
+        }
+
+        $response_data = verifyOtpForUser($params);
+        if($response_data['message'] == 'User not found'){
+            $response = new WP_REST_Response($response_data, 400);
+        }else{
+            $response = new WP_REST_Response($response_data, 200);
+        }
+        
+        $response->set_headers(['Content-Type' => 'application/json']);
+        return $response;
+    }
+}
+
+function resendOtp($request){
+    if ($request->get_method() === 'GET') {
+        $data = array('message' => 'Method not allowed');
+        $response = new WP_REST_Response($data, 400);
+        $response->set_headers(['Content-Type' => 'application/json']);
+        return $response;
+    } elseif ($request->get_method() === 'POST') {
+        $params = $request->get_params();
+
+        $required_params = array('email');
+
+        $missing_params = array_filter($required_params, function($param) use ($params) {
+            return !isset($params[$param]) || empty($params[$param]);
+        });
+
+        if (!empty($missing_params)) {
+            $data = array('message' => 'Required parameters missing or empty', 'missing_params' => $missing_params);
+            $response = new WP_REST_Response($data, 400);
+            $response->set_headers(['Content-Type' => 'application/json']);
+            return $response;
+        }
+
+        $response_data = resendOtpToUser($params);
+        if($response_data['message'] == 'User not found'){
+            $response = new WP_REST_Response($response_data, 400);
+        }else{
+            $response = new WP_REST_Response($response_data, 200);
+        }
+        
+        $response->set_headers(['Content-Type' => 'application/json']);
+        return $response;
+    }
+}
+
+function resendOtpToUser($params){
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'indpush_user';
+    $useremail = sanitize_text_field($params['email']);
+
+    $user_data = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE email = %s", $useremail));
+    $user_id = $user_data->id;
+    $mailResp = sendOtpForUser($user_id, $params['email']);
+    return array('message' => 'otp sent successfully check your mail', 'mailsent' => $mailResp);
+}
+
 function createUser($params){
     global $wpdb;
     $table_name = $wpdb->prefix . 'indpush_user';
@@ -147,6 +235,34 @@ function sendOtpForUser($user_id){
         return array('message' => 'User not found');
     }
 }
+
+function verifyOtpForUser($params){
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'indpush_user';
+    $otp = sanitize_text_field($params['otp']);
+    $user_email = sanitize_text_field($params['email']);
+
+    // Find the user by $user_id
+    $user = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE email = %s", $user_email), ARRAY_A);
+
+    $user_id = $user['id'];
+
+    // Check if user exists
+    if (!$user) {
+        return array('message' => 'User not found');
+    }
+
+    // Check if the provided OTP matches the stored OTP
+    if ($user['otp'] == $otp) {
+        // Update the 'varified' field to 1
+        $wpdb->update($table_name, array('varified' => 1), array('id' => $user_id));
+
+        return array('message' => 'OTP verified successfully');
+    } else {
+        return array('message' => 'Invalid OTP');
+    }
+}
+
 
 
 function generateSubscriptionId($email) {
