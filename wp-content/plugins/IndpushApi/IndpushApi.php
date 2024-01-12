@@ -22,10 +22,6 @@ function indpushApi() {
         'methods' => array('GET', 'POST'),
         'callback' => 'firebasedataupload',
     ));
-    register_rest_route('api', '/sendmail', array(
-        'methods' => array('GET', 'POST'),
-        'callback' => 'sendmailApi',
-    ));
 }
 function signupFunction($request){
     if ($request->get_method() === 'GET') {
@@ -38,14 +34,15 @@ function signupFunction($request){
 
         $required_params = array('name', 'email', 'password', 'domains', 'your_domain');
 
-        foreach ($required_params as $param) {
-            //also check that $params[$param] value is not blank or empty string.
-            if (!isset($params[$param]) || empty($params[$param])) {
-                $response_data = array('message' => $param . ' is required');
-                $response = new WP_REST_Response($response_data, 400);
-                $response->set_headers(['Content-Type' => 'application/json']);
-                return $response;
-            }
+        $missing_params = array_filter($required_params, function($param) use ($params) {
+            return !isset($params[$param]) || empty($params[$param]);
+        });
+
+        if (!empty($missing_params)) {
+            $data = array('message' => 'Required parameters missing or empty', 'missing_params' => $missing_params);
+            $response = new WP_REST_Response($data, 400);
+            $response->set_headers(['Content-Type' => 'application/json']);
+            return $response;
         }
 
         $response_data = createUser($params);
@@ -66,13 +63,15 @@ function loginFunction($request){
 
         $required_params = array('email', 'password');
 
-        foreach ($required_params as $param) {
-            if (!isset($params[$param])) {
-                $response_data = array('message' => $param . ' is required');
-                $response = new WP_REST_Response($response_data, 400);
-                $response->set_headers(['Content-Type' => 'application/json']);
-                return $response;
-            }
+        $missing_params = array_filter($required_params, function($param) use ($params) {
+            return !isset($params[$param]) || empty($params[$param]);
+        });
+
+        if (!empty($missing_params)) {
+            $data = array('message' => 'Required parameters missing or empty', 'missing_params' => $missing_params);
+            $response = new WP_REST_Response($data, 400);
+            $response->set_headers(['Content-Type' => 'application/json']);
+            return $response;
         }
 
         $response_data = findUser($params);
@@ -113,8 +112,10 @@ function createUser($params){
     $wpdb->insert($table_name, $user_data);
     $user_id = $wpdb->insert_id;
     $saved_user = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $user_id), ARRAY_A);
-
     $mailResp = sendOtpForUser($user_id, $params['email']);
+
+    unset($saved_user['password']);
+    unset($saved_user['otp']);
 
     return array('message' => 'user created', 'user' => $saved_user, 'mailsent' => $mailResp);
 }
@@ -123,21 +124,15 @@ function sendOtpForUser($user_id){
     global $wpdb;
     $table_name = $wpdb->prefix . 'indpush_user';
     $otp = random_int(1000, 9999);
-
-    // Update the OTP in the database for the specified user_id
     $wpdb->update(
         $table_name,
         array('otp' => $otp),
         array('id' => $user_id)
     );
-
-    // Retrieve user information to get the email
     $user_data = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $user_id));
 
     if ($user_data) {
         $email = $user_data->email;
-
-        // Now send the OTP to the user's email
         $subject = 'Your OTP for Verification';
         $message = 'Your OTP is: ' . $otp;
 
@@ -249,35 +244,6 @@ function firebasedataupload($request){
         }
 
         $response_data = saveFirebaseData($params);
-        $response = new WP_REST_Response($response_data, 200);
-        $response->set_headers(['Content-Type' => 'application/json']);
-        return $response;
-    }
-}
-
-function sendmailApi($request){
-    if ($request->get_method() === 'GET') {
-        $data = array('message' => 'Method not allowed');
-        $response = new WP_REST_Response($data, 400);
-        $response->set_headers(['Content-Type' => 'application/json']);
-        return $response;
-    } elseif ($request->get_method() === 'POST') {
-        $params = $request->get_params();
-    
-        $required_params = array('email');
-    
-        $missing_params = array_filter($required_params, function($param) use ($params) {
-            return !isset($params[$param]) || empty($params[$param]);
-        });
-    
-        if (!empty($missing_params)) {
-            $data = array('message' => 'Required parameters missing or empty', 'missing_params' => $missing_params);
-            $response = new WP_REST_Response($data, 400);
-            $response->set_headers(['Content-Type' => 'application/json']);
-            return $response;
-        }
-
-        $response_data = sendMail($params);
         $response = new WP_REST_Response($response_data, 200);
         $response->set_headers(['Content-Type' => 'application/json']);
         return $response;
