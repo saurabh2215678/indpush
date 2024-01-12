@@ -182,7 +182,7 @@ function firebasedataupload($request){
             $response->set_headers(['Content-Type' => 'application/json']);
             return $response;
         }
-        
+
         $response_data = saveFirebaseData($params);
         $response = new WP_REST_Response($response_data, 200);
         $response->set_headers(['Content-Type' => 'application/json']);
@@ -229,7 +229,10 @@ function saveFirebaseData($params){
     $vapid = $params['vapid'];
     $userId = $params['userId'];
 
-    // Prepare the data to be inserted into the database
+    // Check if a row with the given user ID already exists
+    $existingRow = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE userId = %d", $userId), ARRAY_A);
+
+    // Prepare the data to be inserted or updated
     $data_to_insert = array(
         'config' => $config,
         'serverkey' => $serverkey,
@@ -245,20 +248,20 @@ function saveFirebaseData($params){
         '%d', // userId is an integer
     );
 
-    // Insert data into the database
-    $wpdb->insert($table_name, $data_to_insert, $data_format);
+    if ($existingRow) {
+        // Row with the same user ID exists, update the row
+        $wpdb->update($table_name, $data_to_insert, array('userId' => $userId), $data_format, array('%d'));
+    } else {
+        // Row with the user ID doesn't exist, insert a new row
+        $wpdb->insert($table_name, $data_to_insert, $data_format);
+    }
 
-    // Check if the insertion was successful
-    if ($wpdb->insert_id) {
+    // Fetch the inserted or updated row
+    $insertedRow = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE userId = %d", $userId), ARRAY_A);
+
+    if ($insertedRow) {
         // Data saved successfully
-        $savedData = array(
-            'config' => $config,
-            'serverkey' => $serverkey,
-            'vapid' => $vapid,
-            'userId' => $userId,
-        );
-
-        return array('message' => 'Data saved successfully.', 'data' => $savedData);
+        return array('message' => 'Data saved successfully.', 'data' => $insertedRow);
     } else {
         // Error occurred during data save
         return array('message' => 'Error saving data to the database.', 'data' => null);
