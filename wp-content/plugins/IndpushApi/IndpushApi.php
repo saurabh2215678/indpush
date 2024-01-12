@@ -91,6 +91,11 @@ function createUser($params){
     global $wpdb;
     $table_name = $wpdb->prefix . 'indpush_user';
 
+    $existing_user = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE email = %s", $params['email']), ARRAY_A);
+    if ($existing_user) {
+        return array('message' => 'User already exists with this email. Please try logging in.');
+    }
+
     $user_data = array(
         'name' => sanitize_text_field($params['name']),
         'email' => sanitize_text_field($params['email']),
@@ -99,6 +104,7 @@ function createUser($params){
         'password' => sanitize_text_field($params['password']),
         'domains' => sanitize_text_field($params['domains']),
         'user_domain' => sanitize_text_field($params['your_domain']),
+        'varified' => false,
         'status' => 'active',
         'created_at' => current_time('mysql', true),
         'updated_at' => current_time('mysql', true)
@@ -108,7 +114,36 @@ function createUser($params){
     $user_id = $wpdb->insert_id;
     $saved_user = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $user_id), ARRAY_A);
 
-    return array('message' => 'user created', 'user' => $saved_user);
+    $mailResp = sendOtpForUser($user_id, $params['email']);
+
+    return array('message' => 'user created', 'user' => $saved_user, 'mailsent' => $mailResp);
+}
+
+function sendOtpForUser($user_id, $useremail){
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'indpush_user';
+    $otp = random_int(1000, 9999);
+    $data_to_insert = array(
+        'otp' => $otp,
+    );
+    $data_format = array(
+        '%d', // userId is an integer
+    );
+    $wpdb->update($table_name, $data_to_insert, array('userId' => $userId), $data_format, array('%d'));
+
+
+    $subject = 'Verify Indpush Account';
+    $message = 'The Otp for Your account varification is'.$otp;
+    $headers = array('Content-Type: text/html; charset=UTF-8');
+
+    $is_mail_sent = wp_mail($useremail, $subject, $message, $headers);
+
+    if ($is_mail_sent) {
+        return array('message' => 'Mail sent successfully');
+    } else {
+        return array('message' => 'Error sending mail');
+    }
+
 }
 
 function generateSubscriptionId($email) {
@@ -255,6 +290,8 @@ function createUserTable(){
         user_domain TEXT,
         domains TEXT,
         password varchar(255),
+        otp mediumint(9),
+        varified BOOLEAN,
         status varchar(20),
         created_at datetime DEFAULT CURRENT_TIMESTAMP,
         updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
