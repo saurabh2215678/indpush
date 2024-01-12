@@ -172,20 +172,17 @@ function firebasedataupload($request){
     
         $required_params = array('config', 'serverkey', 'vapid', 'userId');
     
-        // Check if all required parameters are present and not empty
         $missing_params = array_filter($required_params, function($param) use ($params) {
             return !isset($params[$param]) || empty($params[$param]);
         });
     
         if (!empty($missing_params)) {
-            // Some required parameters are missing or empty
             $data = array('message' => 'Required parameters missing or empty', 'missing_params' => $missing_params);
             $response = new WP_REST_Response($data, 400);
             $response->set_headers(['Content-Type' => 'application/json']);
             return $response;
         }
-    
-        // All required parameters are present and not empty, proceed to save data
+        
         $response_data = saveFirebaseData($params);
         $response = new WP_REST_Response($response_data, 200);
         $response->set_headers(['Content-Type' => 'application/json']);
