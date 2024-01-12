@@ -26,7 +26,7 @@ function Header({user, setUser}) {
           <li className="nav-item">
             <a className="nav-link" href="#">
               <i className="bi-wallet me-2"></i>
-              My Domainn
+              My Domainn 1
             </a>
           </li>
 
