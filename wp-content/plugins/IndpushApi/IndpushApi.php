@@ -91,7 +91,7 @@ function createUser($params){
         'name' => sanitize_text_field($params['name']),
         'email' => sanitize_text_field($params['email']),
         'profile_picture' => isset($params['profile-picture']) ? sanitize_text_field($params['profile-picture']) : '',
-        'subscription_id' => '',
+        'subscription_id' => generateSubscriptionId($params['email']),
         'password' => sanitize_text_field($params['password']),
         'domains' => sanitize_text_field($params['domains']),
         'user_domain' => sanitize_text_field($params['your_domain']),
@@ -101,13 +101,15 @@ function createUser($params){
     );
 
     $wpdb->insert($table_name, $user_data);
-    
     $user_id = $wpdb->insert_id;
-
-    // Retrieve the saved user
     $saved_user = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $user_id), ARRAY_A);
 
     return array('message' => 'user created', 'user' => $saved_user);
+}
+
+function generateSubscriptionId($email) {
+    // Use a secure method to generate a unique subscription_id
+    return md5($email . uniqid());
 }
 
 function findUser($params){
