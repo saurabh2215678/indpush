@@ -217,7 +217,51 @@ function findFirebaseData($params){
 }
 
 function saveFirebaseData($params){
-    return array('message' => 'saving the data');
+    global $wpdb;
+
+    // Set the table name using WordPress database prefix
+    $table_name = $wpdb->prefix . 'indpush_firebase';
+
+    // Extract parameters from the input array
+    $config = $params['config'];
+    $serverkey = $params['serverkey'];
+    $vapid = $params['vapid'];
+    $userId = $params['userId'];
+
+    // Prepare the data to be inserted into the database
+    $data_to_insert = array(
+        'config' => $config,
+        'serverkey' => $serverkey,
+        'vapid' => $vapid,
+        'userId' => $userId,
+    );
+
+    // Define the data format for insertion
+    $data_format = array(
+        '%s', // config is a string
+        '%s', // serverkey is a string
+        '%s', // vapid is a string
+        '%d', // userId is an integer
+    );
+
+    // Insert data into the database
+    $wpdb->insert($table_name, $data_to_insert, $data_format);
+
+    // Check if the insertion was successful
+    if ($wpdb->insert_id) {
+        // Data saved successfully
+        $savedData = array(
+            'config' => $config,
+            'serverkey' => $serverkey,
+            'vapid' => $vapid,
+            'userId' => $userId,
+        );
+
+        return array('message' => 'Data saved successfully.', 'data' => $savedData);
+    } else {
+        // Error occurred during data save
+        return array('message' => 'Error saving data to the database.', 'data' => null);
+    }
 }
 
 function createFirebaseTable(){
