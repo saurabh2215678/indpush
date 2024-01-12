@@ -144,14 +144,15 @@ function firebasedata($request){
 
         $required_params = array('userId');
 
-        foreach ($required_params as $param) {
-            //also check that $params[$param] value is not blank or empty string.
-            if (!isset($params[$param]) || empty($params[$param])) {
-                $response_data = array('message' => $param . ' is required');
-                $response = new WP_REST_Response($response_data, 400);
-                $response->set_headers(['Content-Type' => 'application/json']);
-                return $response;
-            }
+        $missing_params = array_filter($required_params, function($param) use ($params) {
+            return !isset($params[$param]) || empty($params[$param]);
+        });
+
+        if (!empty($missing_params)) {
+            $data = array('message' => 'Required parameters missing or empty', 'missing_params' => $missing_params);
+            $response = new WP_REST_Response($data, 400);
+            $response->set_headers(['Content-Type' => 'application/json']);
+            return $response;
         }
 
         $response_data = findFirebaseData($params);
@@ -214,13 +215,27 @@ function createUserTable(){
 }
 
 function findFirebaseData($params){
-    return array('message' => 'i am giving the data');
-}
-
-function saveFirebaseData($params){
     global $wpdb;
 
     // Set the table name using WordPress database prefix
+    $table_name = $wpdb->prefix . 'indpush_firebase';
+
+    // Extract user ID from the input array
+    $userId = $params['userId'];
+
+    // Find Firebase data by user ID
+    $firebaseData = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE userId = %d", $userId), ARRAY_A);
+
+    if ($firebaseData) {
+        // Firebase data found
+        return array('message' => 'Firebase data found.', 'data' => $firebaseData);
+    } else {
+        // Firebase data not found
+        return array('message' => 'Firebase data not found for the given user ID.', 'data' => null);
+    }
+}
+function saveFirebaseData($params){
+    global $wpdb;
     $table_name = $wpdb->prefix . 'indpush_firebase';
 
     // Extract parameters from the input array
