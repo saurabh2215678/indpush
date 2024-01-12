@@ -119,32 +119,40 @@ function createUser($params){
     return array('message' => 'user created', 'user' => $saved_user, 'mailsent' => $mailResp);
 }
 
-function sendOtpForUser($user_id, $useremail){
+function sendOtpForUser($user_id){
     global $wpdb;
     $table_name = $wpdb->prefix . 'indpush_user';
     $otp = random_int(1000, 9999);
-    $data_to_insert = array(
-        'otp' => $otp,
+
+    // Update the OTP in the database for the specified user_id
+    $wpdb->update(
+        $table_name,
+        array('otp' => $otp),
+        array('id' => $user_id)
     );
-    $data_format = array(
-        '%d', // userId is an integer
-    );
-    $wpdb->update($table_name, $data_to_insert, array('userId' => $userId), $data_format, array('%d'));
 
+    // Retrieve user information to get the email
+    $user_data = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $user_id));
 
-    $subject = 'Verify Indpush Account';
-    $message = 'The Otp for Your account varification is'.$otp;
-    $headers = array('Content-Type: text/html; charset=UTF-8');
+    if ($user_data) {
+        $email = $user_data->email;
 
-    $is_mail_sent = wp_mail($useremail, $subject, $message, $headers);
+        // Now send the OTP to the user's email
+        $subject = 'Your OTP for Verification';
+        $message = 'Your OTP is: ' . $otp;
 
-    if ($is_mail_sent) {
-        return array('message' => 'Mail sent successfully');
+        $mailed = wp_mail($email, $subject, $message);
+
+        if ($mailed) {
+            return array('message' => 'Mail sent successfully');
+        } else {
+            return array('message' => 'Failed to send mail');
+        }
     } else {
-        return array('message' => 'Error sending mail');
+        return array('message' => 'User not found');
     }
-
 }
+
 
 function generateSubscriptionId($email) {
     return md5($email . uniqid());
