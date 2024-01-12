@@ -22,6 +22,15 @@ function indpushApi() {
         'methods' => array('GET', 'POST'),
         'callback' => 'firebasedataupload',
     ));
+    register_rest_route('api', '/verify-otp', array(
+        'methods' => array('GET', 'POST'),
+        'callback' => 'verifyotp',
+    ));
+    register_rest_route('api', '/resend-otp', array(
+        'methods' => array('GET', 'POST'),
+        'callback' => 'resendOtp',
+    ));
+
 }
 function signupFunction($request){
     if ($request->get_method() === 'GET') {
@@ -34,14 +43,15 @@ function signupFunction($request){
 
         $required_params = array('name', 'email', 'password', 'domains', 'your_domain');
 
-        foreach ($required_params as $param) {
-            //also check that $params[$param] value is not blank or empty string.
-            if (!isset($params[$param]) || empty($params[$param])) {
-                $response_data = array('message' => $param . ' is required');
-                $response = new WP_REST_Response($response_data, 400);
-                $response->set_headers(['Content-Type' => 'application/json']);
-                return $response;
-            }
+        $missing_params = array_filter($required_params, function($param) use ($params) {
+            return !isset($params[$param]) || empty($params[$param]);
+        });
+
+        if (!empty($missing_params)) {
+            $data = array('message' => 'Required parameters missing or empty', 'missing_params' => $missing_params);
+            $response = new WP_REST_Response($data, 400);
+            $response->set_headers(['Content-Type' => 'application/json']);
+            return $response;
         }
 
         $response_data = createUser($params);
@@ -62,13 +72,15 @@ function loginFunction($request){
 
         $required_params = array('email', 'password');
 
-        foreach ($required_params as $param) {
-            if (!isset($params[$param])) {
-                $response_data = array('message' => $param . ' is required');
-                $response = new WP_REST_Response($response_data, 400);
-                $response->set_headers(['Content-Type' => 'application/json']);
-                return $response;
-            }
+        $missing_params = array_filter($required_params, function($param) use ($params) {
+            return !isset($params[$param]) || empty($params[$param]);
+        });
+
+        if (!empty($missing_params)) {
+            $data = array('message' => 'Required parameters missing or empty', 'missing_params' => $missing_params);
+            $response = new WP_REST_Response($data, 400);
+            $response->set_headers(['Content-Type' => 'application/json']);
+            return $response;
         }
 
         $response_data = findUser($params);
@@ -83,31 +95,178 @@ function loginFunction($request){
     }
 }
 
+function verifyotp($request){
+    if ($request->get_method() === 'GET') {
+        $data = array('message' => 'Method not allowed');
+        $response = new WP_REST_Response($data, 400);
+        $response->set_headers(['Content-Type' => 'application/json']);
+        return $response;
+    } elseif ($request->get_method() === 'POST') {
+        $params = $request->get_params();
+
+        $required_params = array('email', 'otp');
+
+        $missing_params = array_filter($required_params, function($param) use ($params) {
+            return !isset($params[$param]) || empty($params[$param]);
+        });
+
+        if (!empty($missing_params)) {
+            $data = array('message' => 'Required parameters missing or empty', 'missing_params' => $missing_params);
+            $response = new WP_REST_Response($data, 400);
+            $response->set_headers(['Content-Type' => 'application/json']);
+            return $response;
+        }
+
+        $response_data = verifyOtpForUser($params);
+        if($response_data['message'] == 'User not found'){
+            $response = new WP_REST_Response($response_data, 400);
+        }else{
+            $response = new WP_REST_Response($response_data, 200);
+        }
+        
+        $response->set_headers(['Content-Type' => 'application/json']);
+        return $response;
+    }
+}
+
+function resendOtp($request){
+    if ($request->get_method() === 'GET') {
+        $data = array('message' => 'Method not allowed');
+        $response = new WP_REST_Response($data, 400);
+        $response->set_headers(['Content-Type' => 'application/json']);
+        return $response;
+    } elseif ($request->get_method() === 'POST') {
+        $params = $request->get_params();
+
+        $required_params = array('email');
+
+        $missing_params = array_filter($required_params, function($param) use ($params) {
+            return !isset($params[$param]) || empty($params[$param]);
+        });
+
+        if (!empty($missing_params)) {
+            $data = array('message' => 'Required parameters missing or empty', 'missing_params' => $missing_params);
+            $response = new WP_REST_Response($data, 400);
+            $response->set_headers(['Content-Type' => 'application/json']);
+            return $response;
+        }
+
+        $response_data = resendOtpToUser($params);
+        if($response_data['message'] == 'User not found'){
+            $response = new WP_REST_Response($response_data, 400);
+        }else{
+            $response = new WP_REST_Response($response_data, 200);
+        }
+        
+        $response->set_headers(['Content-Type' => 'application/json']);
+        return $response;
+    }
+}
+
+function resendOtpToUser($params){
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'indpush_user';
+    $useremail = sanitize_text_field($params['email']);
+
+    $user_data = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE email = %s", $useremail));
+    $user_id = $user_data->id;
+    $mailResp = sendOtpForUser($user_id, $params['email']);
+    return array('message' => 'otp sent successfully check your mail', 'mailsent' => $mailResp);
+}
+
 function createUser($params){
     global $wpdb;
     $table_name = $wpdb->prefix . 'indpush_user';
+
+    $existing_user = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE email = %s", $params['email']), ARRAY_A);
+    if ($existing_user) {
+        return array('message' => 'User already exists with this email. Please try logging in.');
+    }
 
     $user_data = array(
         'name' => sanitize_text_field($params['name']),
         'email' => sanitize_text_field($params['email']),
         'profile_picture' => isset($params['profile-picture']) ? sanitize_text_field($params['profile-picture']) : '',
-        'subscription_id' => '',
+        'subscription_id' => generateSubscriptionId($params['email']),
         'password' => sanitize_text_field($params['password']),
         'domains' => sanitize_text_field($params['domains']),
         'user_domain' => sanitize_text_field($params['your_domain']),
+        'varified' => false,
         'status' => 'active',
         'created_at' => current_time('mysql', true),
         'updated_at' => current_time('mysql', true)
     );
 
     $wpdb->insert($table_name, $user_data);
-    
     $user_id = $wpdb->insert_id;
-
-    // Retrieve the saved user
     $saved_user = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $user_id), ARRAY_A);
+    $mailResp = sendOtpForUser($user_id, $params['email']);
 
-    return array('message' => 'user created', 'user' => $saved_user);
+    unset($saved_user['password']);
+    unset($saved_user['otp']);
+
+    return array('message' => 'user created', 'user' => $saved_user, 'mailsent' => $mailResp);
+}
+
+function sendOtpForUser($user_id){
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'indpush_user';
+    $otp = random_int(1000, 9999);
+    $wpdb->update(
+        $table_name,
+        array('otp' => $otp),
+        array('id' => $user_id)
+    );
+    $user_data = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $user_id));
+
+    if ($user_data) {
+        $email = $user_data->email;
+        $subject = 'Your OTP for Verification';
+        $message = 'Your OTP is: ' . $otp;
+
+        $mailed = wp_mail($email, $subject, $message);
+
+        if ($mailed) {
+            return array('message' => 'Mail sent successfully');
+        } else {
+            return array('message' => 'Failed to send mail');
+        }
+    } else {
+        return array('message' => 'User not found');
+    }
+}
+
+function verifyOtpForUser($params){
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'indpush_user';
+    $otp = sanitize_text_field($params['otp']);
+    $user_email = sanitize_text_field($params['email']);
+
+    // Find the user by $user_id
+    $user = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE email = %s", $user_email), ARRAY_A);
+
+    $user_id = $user['id'];
+
+    // Check if user exists
+    if (!$user) {
+        return array('message' => 'User not found');
+    }
+
+    // Check if the provided OTP matches the stored OTP
+    if ($user['otp'] == $otp) {
+        // Update the 'varified' field to 1
+        $wpdb->update($table_name, array('varified' => 1), array('id' => $user_id));
+
+        return array('message' => 'OTP verified successfully');
+    } else {
+        return array('message' => 'Invalid OTP');
+    }
+}
+
+
+
+function generateSubscriptionId($email) {
+    return md5($email . uniqid());
 }
 
 function findUser($params){
@@ -133,6 +292,22 @@ function findUser($params){
     }
 }
 
+function sendMail($params) {
+    $sendToMailId = $params['email'];
+    $subject = isset($params['subject']) ? $params['subject'] : 'Your Subject Here';
+    $message = isset($params['message']) ? $params['message'] : 'Your Message Here';
+    $headers = array('Content-Type: text/html; charset=UTF-8');
+
+    $is_mail_sent = wp_mail($sendToMailId, $subject, $message, $headers);
+
+    if ($is_mail_sent) {
+        return array('message' => 'Mail sent successfully');
+    } else {
+        return array('message' => 'Error sending mail');
+    }
+}
+
+
 function firebasedata($request){
     if ($request->get_method() === 'GET') {
         $data = array('message' => 'Method not allowed');
@@ -144,14 +319,15 @@ function firebasedata($request){
 
         $required_params = array('userId');
 
-        foreach ($required_params as $param) {
-            //also check that $params[$param] value is not blank or empty string.
-            if (!isset($params[$param]) || empty($params[$param])) {
-                $response_data = array('message' => $param . ' is required');
-                $response = new WP_REST_Response($response_data, 400);
-                $response->set_headers(['Content-Type' => 'application/json']);
-                return $response;
-            }
+        $missing_params = array_filter($required_params, function($param) use ($params) {
+            return !isset($params[$param]) || empty($params[$param]);
+        });
+
+        if (!empty($missing_params)) {
+            $data = array('message' => 'Required parameters missing or empty', 'missing_params' => $missing_params);
+            $response = new WP_REST_Response($data, 400);
+            $response->set_headers(['Content-Type' => 'application/json']);
+            return $response;
         }
 
         $response_data = findFirebaseData($params);
@@ -169,17 +345,18 @@ function firebasedataupload($request){
         return $response;
     } elseif ($request->get_method() === 'POST') {
         $params = $request->get_params();
-
+    
         $required_params = array('config', 'serverkey', 'vapid', 'userId');
-
-        foreach ($required_params as $param) {
-            //also check that $params[$param] value is not blank or empty string.
-            if (!isset($params[$param]) || empty($params[$param])) {
-                $response_data = array('message' => $param . ' is required');
-                $response = new WP_REST_Response($response_data, 400);
-                $response->set_headers(['Content-Type' => 'application/json']);
-                return $response;
-            }
+    
+        $missing_params = array_filter($required_params, function($param) use ($params) {
+            return !isset($params[$param]) || empty($params[$param]);
+        });
+    
+        if (!empty($missing_params)) {
+            $data = array('message' => 'Required parameters missing or empty', 'missing_params' => $missing_params);
+            $response = new WP_REST_Response($data, 400);
+            $response->set_headers(['Content-Type' => 'application/json']);
+            return $response;
         }
 
         $response_data = saveFirebaseData($params);
@@ -203,6 +380,8 @@ function createUserTable(){
         user_domain TEXT,
         domains TEXT,
         password varchar(255),
+        otp mediumint(9),
+        varified BOOLEAN,
         status varchar(20),
         created_at datetime DEFAULT CURRENT_TIMESTAMP,
         updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -213,11 +392,72 @@ function createUserTable(){
 }
 
 function findFirebaseData($params){
-    return array('message' => 'i am giving the data');
-}
+    global $wpdb;
 
+    // Set the table name using WordPress database prefix
+    $table_name = $wpdb->prefix . 'indpush_firebase';
+
+    // Extract user ID from the input array
+    $userId = $params['userId'];
+
+    // Find Firebase data by user ID
+    $firebaseData = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE userId = %d", $userId), ARRAY_A);
+
+    if ($firebaseData) {
+        // Firebase data found
+        return array('message' => 'Firebase data found.', 'data' => $firebaseData);
+    } else {
+        // Firebase data not found
+        return array('message' => 'Firebase data not found for the given user ID.', 'data' => null);
+    }
+}
 function saveFirebaseData($params){
-    return array('message' => 'saving the data');
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'indpush_firebase';
+
+    // Extract parameters from the input array
+    $config = $params['config'];
+    $serverkey = $params['serverkey'];
+    $vapid = $params['vapid'];
+    $userId = $params['userId'];
+
+    // Check if a row with the given user ID already exists
+    $existingRow = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE userId = %d", $userId), ARRAY_A);
+
+    // Prepare the data to be inserted or updated
+    $data_to_insert = array(
+        'config' => $config,
+        'serverkey' => $serverkey,
+        'vapid' => $vapid,
+        'userId' => $userId,
+    );
+
+    // Define the data format for insertion
+    $data_format = array(
+        '%s', // config is a string
+        '%s', // serverkey is a string
+        '%s', // vapid is a string
+        '%d', // userId is an integer
+    );
+
+    if ($existingRow) {
+        // Row with the same user ID exists, update the row
+        $wpdb->update($table_name, $data_to_insert, array('userId' => $userId), $data_format, array('%d'));
+    } else {
+        // Row with the user ID doesn't exist, insert a new row
+        $wpdb->insert($table_name, $data_to_insert, $data_format);
+    }
+
+    // Fetch the inserted or updated row
+    $insertedRow = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE userId = %d", $userId), ARRAY_A);
+
+    if ($insertedRow) {
+        // Data saved successfully
+        return array('message' => 'Data saved successfully.', 'data' => $insertedRow);
+    } else {
+        // Error occurred during data save
+        return array('message' => 'Error saving data to the database.', 'data' => null);
+    }
 }
 
 function createFirebaseTable(){
