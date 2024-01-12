@@ -22,6 +22,10 @@ function indpushApi() {
         'methods' => array('GET', 'POST'),
         'callback' => 'firebasedataupload',
     ));
+    register_rest_route('api', '/sendmail', array(
+        'methods' => array('GET', 'POST'),
+        'callback' => 'sendmailApi',
+    ));
 }
 function signupFunction($request){
     if ($request->get_method() === 'GET') {
@@ -108,7 +112,6 @@ function createUser($params){
 }
 
 function generateSubscriptionId($email) {
-    // Use a secure method to generate a unique subscription_id
     return md5($email . uniqid());
 }
 
@@ -134,6 +137,22 @@ function findUser($params){
         return array('message' => 'User not found');
     }
 }
+
+function sendMail($params) {
+    $sendToMailId = $params['email'];
+    $subject = isset($params['subject']) ? $params['subject'] : 'Your Subject Here';
+    $message = isset($params['message']) ? $params['message'] : 'Your Message Here';
+    $headers = array('Content-Type: text/html; charset=UTF-8');
+
+    $is_mail_sent = wp_mail($sendToMailId, $subject, $message, $headers);
+
+    if ($is_mail_sent) {
+        return array('message' => 'Mail sent successfully');
+    } else {
+        return array('message' => 'Error sending mail');
+    }
+}
+
 
 function firebasedata($request){
     if ($request->get_method() === 'GET') {
@@ -187,6 +206,35 @@ function firebasedataupload($request){
         }
 
         $response_data = saveFirebaseData($params);
+        $response = new WP_REST_Response($response_data, 200);
+        $response->set_headers(['Content-Type' => 'application/json']);
+        return $response;
+    }
+}
+
+function sendmailApi($request){
+    if ($request->get_method() === 'GET') {
+        $data = array('message' => 'Method not allowed');
+        $response = new WP_REST_Response($data, 400);
+        $response->set_headers(['Content-Type' => 'application/json']);
+        return $response;
+    } elseif ($request->get_method() === 'POST') {
+        $params = $request->get_params();
+    
+        $required_params = array('email');
+    
+        $missing_params = array_filter($required_params, function($param) use ($params) {
+            return !isset($params[$param]) || empty($params[$param]);
+        });
+    
+        if (!empty($missing_params)) {
+            $data = array('message' => 'Required parameters missing or empty', 'missing_params' => $missing_params);
+            $response = new WP_REST_Response($data, 400);
+            $response->set_headers(['Content-Type' => 'application/json']);
+            return $response;
+        }
+
+        $response_data = sendMail($params);
         $response = new WP_REST_Response($response_data, 200);
         $response->set_headers(['Content-Type' => 'application/json']);
         return $response;
