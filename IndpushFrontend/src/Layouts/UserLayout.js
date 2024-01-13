@@ -19,7 +19,7 @@ function UserLayout() {
   return (
     <div>
         <Nav/>
-        {user.varified === '1' && <Leftpanel/>}
+        {user?.varified === '1' && <Leftpanel/>}
         <Outlet/>
     </div>
   )

@@ -299,10 +299,11 @@ function findUser($params){
     );
 
     $user = $wpdb->get_row($query);
-    unset($user['password']);
-    unset($user['otp']);
+ 
     if ($user) {
-        return array('message' => 'User found', 'user' => $user);
+        unset($user->password);
+        unset($user->otp);
+        return array('message' => 'User found', 'user' =>  $user);
     } else {
         return array('message' => 'User not found');
     }
