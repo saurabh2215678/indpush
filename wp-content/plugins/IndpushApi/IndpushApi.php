@@ -38,6 +38,10 @@ function indpushApi() {
         'methods' => array('GET', 'POST'),
         'callback' => 'validateResetPasswordLink',
     ));
+    register_rest_route('api', '/reset-password', array(
+        'methods' => array('GET', 'POST'),
+        'callback' => 'resetPasswordApi',
+    ));
 
 }
 function signupFunction($request){
@@ -417,11 +421,6 @@ function resetPasswordMail($params){
     $data_to_encrypt = $user_email . '|' . $token . '|' . $timestamp;
 
     $encrypted_data = base64_encode(encrypt_function($data_to_encrypt));
-    $wpdb->update(
-        $table_name,
-        array('reset_password' => $encrypted_data),
-        array('email' => $user_email)
-    );
     $reset_link = 'https://indpush.com/reset-password/' . $encrypted_data;
 
 
@@ -466,6 +465,35 @@ function validateResetPasswordLink($request){
     }
 }
 
+function resetPasswordApi($request){
+    if ($request->get_method() === 'GET') {
+        $data = array('message' => 'Method not allowed');
+        $response = new WP_REST_Response($data, 400);
+        $response->set_headers(['Content-Type' => 'application/json']);
+        return $response;
+    } elseif ($request->get_method() === 'POST') {
+        $params = $request->get_params();
+    
+        $required_params = array('password-link', 'email', 'password');
+    
+        $missing_params = array_filter($required_params, function($param) use ($params) {
+            return !isset($params[$param]) || empty($params[$param]);
+        });
+    
+        if (!empty($missing_params)) {
+            $data = array('message' => 'Required parameters missing or empty', 'missing_params' => $missing_params);
+            $response = new WP_REST_Response($data, 400);
+            $response->set_headers(['Content-Type' => 'application/json']);
+            return $response;
+        }
+
+        $response_data = resetPassword($params);
+        $response = new WP_REST_Response($response_data, 200);
+        $response->set_headers(['Content-Type' => 'application/json']);
+        return $response;
+    }
+}
+
 function validateLink($params) {
     global $wpdb;
     $table_name = $wpdb->prefix . 'indpush_user';
@@ -498,6 +526,55 @@ function validateLink($params) {
     }
 }
 
+function resetPassword($params){
+    $resetPasswordLink = sanitize_text_field($params['password-link']);
+    $resetPasswordEmail = sanitize_text_field($params['email']);
+    $newPassword = sanitize_text_field($params['password']);
+
+    // Remove the base URL from the link
+    $baseURL = 'https://indpush.com/reset-password/';
+    $linkWithoutBaseURL = str_replace($baseURL, '', $resetPasswordLink);
+
+    // Decrypt the data from the modified reset password link
+    $decrypted_data = decrypt_function(base64_decode($linkWithoutBaseURL));
+
+    // Extract email, token, and timestamp from decrypted data
+    list($storedEmail, $token, $timestamp) = explode('|', $decrypted_data);
+
+    // Compare stored email with the provided email
+    if ($storedEmail === $resetPasswordEmail) {
+        // Check if the timestamp is within a reasonable timeframe (e.g., link valid for 1 hour)
+        $currentTimestamp = current_time('timestamp');
+        $linkExpirationTime = 3600; // 1 hour in seconds
+
+        if (($currentTimestamp - $timestamp) <= $linkExpirationTime) {
+            return resetPasswordOfUser($resetPasswordEmail, $newPassword);
+        } else {
+            return array('message' => 'Password reset link has expired');
+        }
+    } else {
+        return array('message' => 'Invalid password reset link');
+    }
+}
+
+function resetPasswordOfUser($email, $password) {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'indpush_user';
+
+    // Update the password field for the user with the provided email
+    $result = $wpdb->update(
+        $table_name,
+        array('password' => $password),
+        array('email' => $email)
+    );
+
+    if ($result !== false) {
+        return array('message' => 'Password reset successfully');
+    } else {
+        return array('message' => 'Failed to reset password');
+    }
+}
+
 function encrypt_function($data) {
     $encryption_key = 'ganpati';
     $encryption_iv = 'shivji';
@@ -525,7 +602,6 @@ function createUserTable(){
         profile_picture varchar(255),
         subscription_id varchar(255),
         user_domain TEXT,
-        reset_password TEXT,
         domains TEXT,
         password varchar(255),
         otp mediumint(9),
