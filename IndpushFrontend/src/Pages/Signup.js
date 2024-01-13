@@ -3,69 +3,30 @@ import './login.css';
 import { Link, useNavigate } from 'react-router-dom';
 import { apiURI } from '../utils/common';
 import { toast } from 'react-toastify';
+import { useDispatch, useSelector } from 'react-redux';
+import { userSignup } from '../Redux/slices/user';
 
 
 
-function Signup({user, setUser}) {
-
-   const [name, setName] = useState('');
-   const [mobile, setMobile] = useState('');
-   const [email, setEmail] = useState('');
-   const [password, setPassword] = useState('');
-   const [domainname, setdomainName] = useState('');
-   const [yourdoamin, setYourdoamin] = useState('');
-
+function Signup() { 
    
+   const [formData, setFormData] = useState({});
+   const dispatch = useDispatch();
    const navigate = useNavigate();
+   const user = useSelector((state) => state.user.user)
+
    if(user){
       navigate('/dashboard');
    }
-
-   // const SignupData=()=>{
-   //    let signupItem = {name,mobile,email}
-   //    console.log(signupItem)  
-   //  }
-   
-  
    const SignupData = async ()=> {
-
-     const result = await fetch(`${apiURI}/signup`, {
-      method:'post',
-      // body: JSON.stringify({name,mobile,email}),
-      body: new URLSearchParams({
-         name,
-         mobile,
-         email,
-         password, 
-         'domains' : domainname, 
-         'your_domain': yourdoamin 
-      }),
-      headers: {
-         "Content-Type": "application/x-www-form-urlencoded",
-         }
-      });
-      const data = await result.json();
-      // Convert the object to a JSON string
-      
-      console.log(result)
-      console.log('data', data);
-      if(result.status ==200){
-         const user = JSON.stringify(data);
-         localStorage.setItem('user', user);
-         setUser(user);
-      toast.success(data.message);
-        navigate('/dashboard') 
-      }
-      else{
-         toast.error(data.message);
-      }
-      // Store the JSON string in localStorage under a specific key
-      // localStorage.setItem('myDataKey', dataString);
-      
-      // navigate('/dashboard')
-      
+    const userData = await dispatch(userSignup(formData));
    }
-  
+   
+   const handleFormData =(e)=>{
+      const name = e.target.name;
+      const value = e.target.value;
+      setFormData({...formData, [name]: value});
+   }
 
   return (
     <div className='middle_login'>
@@ -73,15 +34,15 @@ function Signup({user, setUser}) {
       <div className="custom-block bg-white">
          <h3 className='mb-3'>LOGO</h3>
          <div className="custom-form profile-form" onSubmit="">
-         <input className="form-control" onChange={(e)=>setName(e.target.value)} type="text" name="profile-name" id="profile-name" placeholder="Name" />
-          <input className="form-control" onChange={(e)=>setMobile(e.target.value)} type="text" name="profile-name" id="profile-name" placeholder="Mobile Number" /> 
-          <input className="form-control" onChange={(e)=>setEmail(e.target.value)}  type="text" name="profile-name" id="profile-name" placeholder="Email Id" />
+         <input className="form-control" onChange={handleFormData} type="text" name="name" placeholder="Name" />
+          <input className="form-control" onChange={handleFormData} type="text" name="mobile"  placeholder="Mobile Number" /> 
+          <input className="form-control" onChange={handleFormData}  type="text" name="email" placeholder="Email Id" />
           
-          <input className="form-control" onChange={(e)=>setdomainName(e.target.value)}  type="text" name="domain" id="domain-name" placeholder="Domain Name" />
+          <input className="form-control" onChange={handleFormData}  type="text" name="domains"  placeholder="Domain Name" />
 
-          <input className="form-control" onChange={(e)=>setYourdoamin(e.target.value)}  type="text" name="your-domain" id="domain-your" placeholder="Your Domain" />
+          <input className="form-control" onChange={handleFormData}  type="text" name="your_domain"  placeholder="Your Domain" />
 
-          <input className="form-control" onChange={(e)=>setPassword(e.target.value)}  type="password" name="password" id="password" placeholder="Password" />
+          <input className="form-control" onChange={handleFormData}  type="password" name="password"  placeholder="Password" />
            {/* <input className="form-control" type="password" name="profile-email" id="profile-email" placeholder="password" />
             <input className="form-control" type="password" name="profile-email" id="profile-email" placeholder="Reenter Password" /> */}
                

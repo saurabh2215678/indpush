@@ -1,17 +1,19 @@
 import React from 'react'
 import { Link, useNavigate } from 'react-router-dom';
+import { logout } from '../Redux/slices/user';
+import { useDispatch, useSelector } from 'react-redux';
 
 
-function Header({user, setUser}) {
+function Leftpanel() {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  if(!user){
-    navigate('/login') 
-  }
-  function logout(){
-    localStorage.removeItem('user');
-    setUser(null);
-    navigate('/login') 
-  }
+  const user = useSelector((state) => state.user.user)
+  if(user){
+    navigate('/dashboard');
+ }
+ const logOut=()=>{
+  dispatch(logout);
+ }
   return (
     <nav id="sidebarMenu" className="col-md-3 col-lg-3 d-md-block sidebar collapse">
       <div className="position-sticky py-4 px-3 sidebar-sticky">
@@ -26,7 +28,7 @@ function Header({user, setUser}) {
           <li className="nav-item">
             <a className="nav-link" href="#">
               <i className="bi-wallet me-2"></i>
-              My Domainn 1
+              My Domainn
             </a>
           </li>
 
@@ -66,7 +68,7 @@ function Header({user, setUser}) {
           </li>
 
           <li className="nav-item border-top mt-auto pt-2">
-            <a className="nav-link" onClick={logout} href="#">
+            <a className="nav-link" onClick={logOut} href="#">
               <i className="bi-box-arrow-left me-2"></i>
               Logout
             </a>
@@ -77,4 +79,4 @@ function Header({user, setUser}) {
   )
 }
 
-export default Header
+export default Leftpanel
