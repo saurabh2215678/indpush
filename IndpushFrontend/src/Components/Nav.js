@@ -88,7 +88,7 @@ function Nav() {
                             className="profile-image img-fluid"
                             alt=""
                             />
-                            {user.name}
+                            {user?.name}
                             
                     </Link>
                         {/* <a className="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
