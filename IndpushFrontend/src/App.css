@@ -36,3 +36,4 @@
     transform: rotate(360deg);
   }
 }
+[resp-error]:placeholder-shown, [resp-error]:placeholder-shown:focus, [resp-error]:placeholder-shown:hover { border-color: red; }

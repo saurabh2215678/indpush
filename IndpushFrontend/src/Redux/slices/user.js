@@ -12,8 +12,24 @@ export const userSignup = createAsyncThunk(
                "Content-Type": "application/x-www-form-urlencoded",
                }
         });
+        const apiStatus = response.status;
         const responseData = await response.json();
-        return responseData
+        return {...responseData, status: apiStatus}
+      }
+);
+export const userLogin = createAsyncThunk(
+    'user/login',
+    async (formdata) => {
+        const response = await fetch(`${apiURI}/login`, {
+            method:'post',
+            body: new URLSearchParams(formdata),
+            headers: {
+               "Content-Type": "application/x-www-form-urlencoded",
+               }
+        });
+        const apiStatus = response.status;
+        const responseData = await response.json();
+        return {...responseData, status: apiStatus}
       }
 );
 
@@ -40,8 +56,10 @@ export const userSlice = createSlice({
          state.loading =  true;
        });
        builder.addCase(userSignup.fulfilled, (state, action) => {
-         state.user =  action.payload.user;
-         localStorage.setItem('userData', JSON.stringify(action.payload.user));
+        if(action.payload.user){
+            state.user =  action.payload.user;
+            localStorage.setItem('userData', JSON.stringify(action.payload.user));
+        }
          state.loading =  false;
          state.error =  false;
        });
@@ -49,6 +67,23 @@ export const userSlice = createSlice({
          state.error =  true;
          state.loading =  false;
        });
+
+
+        builder.addCase(userLogin.pending, (state, action) => {
+          state.loading =  true;
+        });
+        builder.addCase(userLogin.fulfilled, (state, action) => {
+        if(action.payload.user){
+            state.user =  action.payload.user;
+            localStorage.setItem('userData', JSON.stringify(action.payload.user));
+        }
+          state.loading =  false;
+          state.error =  false;
+        });
+        builder.addCase(userLogin.rejected, (state, action) => {
+          state.error =  true;
+          state.loading =  false;
+        });
 
     }
 });

@@ -11,6 +11,7 @@ import { Provider } from 'react-redux';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Home from './Pages/Home.js';
+import VerifyAccount from './Pages/VerifyAccount.js';
 
 function App() {
 
@@ -28,6 +29,7 @@ function App() {
         </Route>
         <Route element={<UserLayout />}>
           <Route path="/dashboard" element={<Dashboard />}/>
+          <Route path="/verify-account" element={<VerifyAccount />}/>
         </Route>
    
       </Routes>

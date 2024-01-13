@@ -67,6 +67,9 @@ function signupFunction($request){
         }
 
         $response_data = createUser($params);
+        if($response_data['error']){
+            $response_data =  $response_data['message'];
+        }
         $response = new WP_REST_Response($response_data, 200);
         $response->set_headers(['Content-Type' => 'application/json']);
         return $response;
@@ -130,7 +133,7 @@ function verifyotp($request){
         }
 
         $response_data = verifyOtpForUser($params);
-        if($response_data['message'] == 'User not found'){
+        if($response_data['message'] == 'User not found' || $response_data['message'] == 'Invalid OTP'){
             $response = new WP_REST_Response($response_data, 400);
         }else{
             $response = new WP_REST_Response($response_data, 200);
@@ -192,7 +195,7 @@ function createUser($params){
 
     $existing_user = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE email = %s", $params['email']), ARRAY_A);
     if ($existing_user) {
-        return array('message' => 'User already exists with this email. Please try logging in.');
+        return array('message' => 'User already exists with this email. Please try logging in.', 'error'=>1);
     }
 
     $user_data = array(
@@ -296,7 +299,8 @@ function findUser($params){
     );
 
     $user = $wpdb->get_row($query);
-
+    unset($user['password']);
+    unset($user['otp']);
     if ($user) {
         return array('message' => 'User found', 'user' => $user);
     } else {

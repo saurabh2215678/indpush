@@ -11,13 +11,15 @@ function UserLayout() {
   useEffect(() => {
     if (!user) {
       navigate('/login');
+    }else if(user.varified !== '1'){
+      navigate('/verify-account');
     }
   }, [user, navigate]);
 
   return (
     <div>
         <Nav/>
-        <Leftpanel/>
+        {user.varified === '1' && <Leftpanel/>}
         <Outlet/>
     </div>
   )

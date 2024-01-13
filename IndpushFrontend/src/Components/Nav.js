@@ -9,7 +9,7 @@ function Nav() {
     <div>
          <header className="navbar sticky-top flex-md-nowrap">
             <div className="col-md-3 col-lg-3 me-0 px-3 fs-6">
-                <Link className="navbar-brand" to="/">
+                <Link className="navbar-brand" to="/dashboard">
                     <i className="bi-box"></i>
                     IndPush
                 </Link>
@@ -80,14 +80,14 @@ function Nav() {
                    
 
                     <div className="dropdown px-3">
-                    <Link to="/login" className="nav-link dropdown-toggle">
+                    <a href="#" className="nav-link dropdown-toggle">
                     <img
                             src="/images/social/medium-shot-happy-man-smiling.jpg"
                             className="profile-image img-fluid"
                             alt=""
                             />
                             
-                    </Link>
+                    </a>
                         {/* <a className="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <img src="images/medium-shot-happy-man-smiling.jpg" className="profile-image img-fluid" alt="">
                             <img

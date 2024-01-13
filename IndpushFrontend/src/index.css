@@ -11,3 +11,5 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+[resp-error]:placeholder-shown, [resp-error]:placeholder-shown:focus, [resp-error]:placeholder-shown:hover { border-color: red; }
