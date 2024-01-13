@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 
 function Dashboard() {
    
@@ -18,76 +18,76 @@ function Dashboard() {
                                         <table className='account-table table'>
                                         <thead>
                                             <tr>
-                                                <th scope="col">Date</th>
-                                                <th scope="col">Time</th>
-                                                <th scope="col">Description</th>
-                                                <th scope="col">Payment Type</th>
-                                                <th scope="col">Amount</th>
-                                                <th scope="col">Balance</th>
-                                                <th scope="col">Status</th>
+                                                <th>Date</th>
+                                                <th>Time</th>
+                                                <th>Description</th>
+                                                <th>Payment Type</th>
+                                                <th>Amount</th>
+                                                <th>Balance</th>
+                                                <th>Status</th>
 
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <tr>
-                                            <td scope="row">July 5, 2023</td>
-                                            <td scope="row">10:00 PM</td>
-                                            <td scope="row">Shopping</td>
-                                            <td scope="row">C2C Transfer</td>
-                                            <td className="text-danger" scope="row">
+                                            <td>July 5, 2023</td>
+                                            <td>10:00 PM</td>
+                                            <td>Shopping</td>
+                                            <td>C2C Transfer</td>
+                                            <td className="text-danger">
                                             <span className="me-1">-</span>
                                             $100.00
                                             </td>
-                                            <td scope="row">$5,500.00</td>
-                                            <td scope="row">
+                                            <td>$5,500.00</td>
+                                            <td>
                                             <span className="badge text-bg-danger">
                                             Pending
                                             </span>
                                             </td>
                                             </tr>
                                             <tr>
-                                                <td scope="row">July 2, 2023</td>
-                                                <td scope="row">10:42 AM</td>
-                                                <td scope="row">Food Delivery</td>
-                                                <td scope="row">Mobile Reload</td>
-                                                <td className="text-success" scope="row">
+                                                <td>July 2, 2023</td>
+                                                <td>10:42 AM</td>
+                                                <td>Food Delivery</td>
+                                                <td>Mobile Reload</td>
+                                                <td className="text-success">
                                                     <span className="me-1">+</span>
                                                     $250
                                                 </td>
-                                                <td scope="row">$5,600.00</td>
-                                                <td scope="row">
+                                                <td>$5,600.00</td>
+                                                <td>
                                                     <span className="badge text-bg-success">
                                                         Success
                                                     </span>
                                                 </td>
                                             </tr>
                                             <tr>
-                                            <td scope="row">July 5, 2023</td>
-                                            <td scope="row">10:00 PM</td>
-                                            <td scope="row">Shopping</td>
-                                            <td scope="row">C2C Transfer</td>
-                                            <td className="text-danger" scope="row">
+                                            <td>July 5, 2023</td>
+                                            <td>10:00 PM</td>
+                                            <td>Shopping</td>
+                                            <td>C2C Transfer</td>
+                                            <td className="text-danger">
                                             <span className="me-1">-</span>
                                             $100.00
                                             </td>
-                                            <td scope="row">$5,500.00</td>
-                                            <td scope="row">
+                                            <td>$5,500.00</td>
+                                            <td>
                                             <span className="badge text-bg-danger">
                                             Pending
                                             </span>
                                             </td>
                                             </tr>
                                             <tr>
-                                                <td scope="row">July 2, 2023</td>
-                                                <td scope="row">10:42 AM</td>
-                                                <td scope="row">Food Delivery</td>
-                                                <td scope="row">Mobile Reload</td>
-                                                <td className="text-success" scope="row">
+                                                <td>July 2, 2023</td>
+                                                <td>10:42 AM</td>
+                                                <td>Food Delivery</td>
+                                                <td>Mobile Reload</td>
+                                                <td className="text-success">
                                                     <span className="me-1">+</span>
                                                     $250
                                                 </td>
-                                                <td scope="row">$5,600.00</td>
-                                                <td scope="row">
+                                                <td>$5,600.00</td>
+                                                <td>
                                                     <span className="badge text-bg-success">
                                                         Success
                                                     </span>

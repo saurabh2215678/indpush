@@ -1,11 +1,9 @@
+/* eslint-disable jsx-a11y/anchor-is-valid */
 import React from 'react'
-import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 
-
-
 function Nav() {
-    const user = useSelector((state) => state.user.user)
+    // const user = useSelector((state) => state.user.user);
     
   return (
     <div>
@@ -88,7 +86,6 @@ function Nav() {
                             className="profile-image img-fluid"
                             alt=""
                             />
-                            {user?.name}
                             
                     </Link>
                         {/* <a className="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -147,4 +144,5 @@ function Nav() {
   )
 }
 
-export default Nav
+export default Nav;
+/* eslint-enable jsx-a11y/anchor-is-valid */

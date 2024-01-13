@@ -1,18 +1,13 @@
 import React from 'react'
-import { Link, useNavigate } from 'react-router-dom';
 import { logout } from '../Redux/slices/user';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 
 function Leftpanel() {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const user = useSelector((state) => state.user.user)
-  if(user){
-    navigate('/dashboard');
- }
+
  const logOut=()=>{
-  dispatch(logout);
+  dispatch(logout());
  }
   return (
     <nav id="sidebarMenu" className="col-md-3 col-lg-3 d-md-block sidebar collapse">

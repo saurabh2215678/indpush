@@ -30,6 +30,14 @@ function indpushApi() {
         'methods' => array('GET', 'POST'),
         'callback' => 'resendOtp',
     ));
+    register_rest_route('api', '/reset-password-mail', array(
+        'methods' => array('GET', 'POST'),
+        'callback' => 'resetPasswordMailAPI',
+    ));
+    register_rest_route('api', '/validate-reset-password-link', array(
+        'methods' => array('GET', 'POST'),
+        'callback' => 'validateResetPasswordLink',
+    ));
 
 }
 function signupFunction($request){
@@ -366,6 +374,145 @@ function firebasedataupload($request){
     }
 }
 
+function resetPasswordMailAPI($request){
+    if ($request->get_method() === 'GET') {
+        $data = array('message' => 'Method not allowed');
+        $response = new WP_REST_Response($data, 400);
+        $response->set_headers(['Content-Type' => 'application/json']);
+        return $response;
+    } elseif ($request->get_method() === 'POST') {
+        $params = $request->get_params();
+    
+        $required_params = array('email');
+    
+        $missing_params = array_filter($required_params, function($param) use ($params) {
+            return !isset($params[$param]) || empty($params[$param]);
+        });
+    
+        if (!empty($missing_params)) {
+            $data = array('message' => 'Required parameters missing or empty', 'missing_params' => $missing_params);
+            $response = new WP_REST_Response($data, 400);
+            $response->set_headers(['Content-Type' => 'application/json']);
+            return $response;
+        }
+
+        $response_data = resetPasswordMail($params);
+        $response = new WP_REST_Response($response_data, 200);
+        $response->set_headers(['Content-Type' => 'application/json']);
+        return $response;
+    }
+}
+
+function resetPasswordMail($params){
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'indpush_user';
+    $user_email = sanitize_text_field($params['email']);
+    $user = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE email = %s", $user_email), ARRAY_A);
+    if (!$user) {
+        return array('message' => 'User not found');
+    }
+
+    $token = bin2hex(random_bytes(32));
+    $timestamp = current_time('timestamp');
+    $data_to_encrypt = $user_email . '|' . $token . '|' . $timestamp;
+
+    $encrypted_data = base64_encode(encrypt_function($data_to_encrypt));
+    $wpdb->update(
+        $table_name,
+        array('reset_password' => $encrypted_data),
+        array('email' => $user_email)
+    );
+    $reset_link = 'https://indpush.com/reset-password/' . $encrypted_data;
+
+
+    $subject = 'Reset your password';
+    $message = 'Follow this Link to reset your password: ' . $reset_link;
+
+    $mailed = wp_mail($user_email, $subject, $message);
+
+    if ($mailed) {
+        return array('message' => 'Password reset link sent successfully');
+    } else {
+        return array('message' => 'Failed to send Password reset link');
+    }
+}
+
+function validateResetPasswordLink($request){
+    if ($request->get_method() === 'GET') {
+        $data = array('message' => 'Method not allowed');
+        $response = new WP_REST_Response($data, 400);
+        $response->set_headers(['Content-Type' => 'application/json']);
+        return $response;
+    } elseif ($request->get_method() === 'POST') {
+        $params = $request->get_params();
+    
+        $required_params = array('password-link', 'email');
+    
+        $missing_params = array_filter($required_params, function($param) use ($params) {
+            return !isset($params[$param]) || empty($params[$param]);
+        });
+    
+        if (!empty($missing_params)) {
+            $data = array('message' => 'Required parameters missing or empty', 'missing_params' => $missing_params);
+            $response = new WP_REST_Response($data, 400);
+            $response->set_headers(['Content-Type' => 'application/json']);
+            return $response;
+        }
+
+        $response_data = validateLink($params);
+        $response = new WP_REST_Response($response_data, 200);
+        $response->set_headers(['Content-Type' => 'application/json']);
+        return $response;
+    }
+}
+
+function validateLink($params) {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'indpush_user';
+    $resetPasswordLink = sanitize_text_field($params['password-link']);
+    $resetPasswordEmail = sanitize_text_field($params['email']);
+
+    // Remove the base URL from the link
+    $baseURL = 'https://indpush.com/reset-password/';
+    $linkWithoutBaseURL = str_replace($baseURL, '', $resetPasswordLink);
+
+    // Decrypt the data from the modified reset password link
+    $decrypted_data = decrypt_function(base64_decode($linkWithoutBaseURL));
+
+    // Extract email, token, and timestamp from decrypted data
+    list($storedEmail, $token, $timestamp) = explode('|', $decrypted_data);
+
+    // Compare stored email with the provided email
+    if ($storedEmail === $resetPasswordEmail) {
+        // Check if the timestamp is within a reasonable timeframe (e.g., link valid for 1 hour)
+        $currentTimestamp = current_time('timestamp');
+        $linkExpirationTime = 3600; // 1 hour in seconds
+
+        if (($currentTimestamp - $timestamp) <= $linkExpirationTime) {
+            return array('message' => 'Password reset link is valid');
+        } else {
+            return array('message' => 'Password reset link has expired');
+        }
+    } else {
+        return array('message' => 'Invalid password reset link');
+    }
+}
+
+function encrypt_function($data) {
+    $encryption_key = 'ganpati';
+    $encryption_iv = 'shivji';
+    $encrypted_data = openssl_encrypt($data, 'AES-256-CBC', $encryption_key, 0, $encryption_iv);
+
+    return $encrypted_data;
+}
+
+function decrypt_function($encrypted_data) {
+    $encryption_key = 'ganpati';
+    $encryption_iv = 'shivji';
+    $decrypted_data = openssl_decrypt($encrypted_data, 'AES-256-CBC', $encryption_key, 0, $encryption_iv);
+    return $decrypted_data;
+}
+
 function createUserTable(){
     global $wpdb;
     $table_name = $wpdb->prefix . 'indpush_user';
@@ -378,6 +525,7 @@ function createUserTable(){
         profile_picture varchar(255),
         subscription_id varchar(255),
         user_domain TEXT,
+        reset_password TEXT,
         domains TEXT,
         password varchar(255),
         otp mediumint(9),
