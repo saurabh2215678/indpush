@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/anchor-is-valid */
 import React from 'react'
 import { logout } from '../Redux/slices/user';
 import { useDispatch } from 'react-redux';
@@ -74,4 +75,5 @@ function Leftpanel() {
   )
 }
 
-export default Leftpanel
+export default Leftpanel;
+/* eslint-enable jsx-a11y/anchor-is-valid */

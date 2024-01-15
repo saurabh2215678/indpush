@@ -33,6 +33,38 @@ export const userLogin = createAsyncThunk(
       }
 );
 
+export const verifyOtp = createAsyncThunk(
+  'user/verify-otp',
+  async (formdata) => {
+      const response = await fetch(`${apiURI}/verify-otp`, {
+          method:'post',
+          body: new URLSearchParams(formdata),
+          headers: {
+             "Content-Type": "application/x-www-form-urlencoded",
+             }
+      });
+      const apiStatus = response.status;
+      const responseData = await response.json();
+      return {...responseData, status: apiStatus}
+    }
+);
+
+export const resendOtp = createAsyncThunk(
+  'user/resend-otp',
+  async (formdata) => {
+      const response = await fetch(`${apiURI}/resend-otp`, {
+          method:'post',
+          body: new URLSearchParams(formdata),
+          headers: {
+             "Content-Type": "application/x-www-form-urlencoded",
+             }
+      });
+      const apiStatus = response.status;
+      const responseData = await response.json();
+      return {...responseData, status: apiStatus}
+    }
+);
+
 const localStorageUser = JSON.parse(localStorage.getItem('userData'));
 
 const initialState = {
@@ -81,6 +113,30 @@ export const userSlice = createSlice({
           state.error =  false;
         });
         builder.addCase(userLogin.rejected, (state, action) => {
+          state.error =  true;
+          state.loading =  false;
+        });
+
+        builder.addCase(verifyOtp.pending, (state, action) => {
+          state.loading =  true;
+        });
+        builder.addCase(verifyOtp.fulfilled, (state, action) => {
+          state.loading =  false;
+          state.error =  false;
+        });
+        builder.addCase(verifyOtp.rejected, (state, action) => {
+          state.error =  true;
+          state.loading =  false;
+        });
+
+        builder.addCase(resendOtp.pending, (state, action) => {
+          state.loading =  true;
+        });
+        builder.addCase(resendOtp.fulfilled, (state, action) => {
+          state.loading =  false;
+          state.error =  false;
+        });
+        builder.addCase(resendOtp.rejected, (state, action) => {
           state.error =  true;
           state.loading =  false;
         });

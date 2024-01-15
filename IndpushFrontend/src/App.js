@@ -12,12 +12,14 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Home from './Pages/Home.js';
 import VerifyAccount from './Pages/VerifyAccount.js';
+import UserAuth from './Components/UserAuth.js';
 
 function App() {
 
   return (
     <div>
    <Provider store={store}>
+    <UserAuth/>
     <Router>
       <Routes>
 
