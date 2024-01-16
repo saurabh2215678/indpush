@@ -564,35 +564,43 @@ function validateLink($params) {
 
 function updateProfile($params) {
     global $wpdb;
+
     $table_name = $wpdb->prefix . 'indpush_user';
     $email = sanitize_text_field($params['email']);
     $password = sanitize_text_field($params['password']);
-
+    
     $user = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE email = %s", $email));
 
     if ($user && $password === $user->password) {
         if (isset($_FILES['profile_picture']) && !empty($_FILES['profile_picture']['name'])) {
-            $upload_overrides = array('test_form' => false);
-            $file = wp_handle_upload($_FILES['profile_picture'], $upload_overrides);
+            // Ensure that the file is an image
+            $file_type = wp_check_filetype($_FILES['profile_picture']['name'], array('jpeg', 'jpg', 'gif', 'png'));
+            if ($file_type['ext']) {
+                $upload_overrides = array('test_form' => false);
+                $file = wp_handle_upload($_FILES['profile_picture'], $upload_overrides);
 
-            if (!empty($file['error'])) {
-                return array('error' => $file['error']);
+                if (!empty($file['error'])) {
+                    return array('error' => $file['error']);
+                }
+
+                $profile_picture_url = $file['url'];
+
+                $wpdb->update(
+                    $table_name,
+                    array(
+                        'profile_picture' => $profile_picture_url,
+                    ),
+                    array('id' => $user->id)
+                );
+            } else {
+                return array('error' => 'Invalid file type. Please upload a valid image.');
             }
-            $profile_picture_url = $file['url'];
-
-            $wpdb->update(
-                $table_name,
-                array(
-                    'profile_picture' => $profile_picture_url,
-                ),
-                array('id' => $user->id)
-            );
         }
 
+        // Update other fields in the user data if provided in $params
         $name = isset($params['name']) ? sanitize_text_field($params['name']) : $user->name;
         $user_domain = isset($params['user_domain']) ? sanitize_text_field($params['user_domain']) : $user->user_domain;
         $domains = isset($params['domains']) ? sanitize_text_field($params['domains']) : $user->domains;
-
 
         $wpdb->update(
             $table_name,
@@ -603,6 +611,7 @@ function updateProfile($params) {
             ),
             array('id' => $user->id)
         );
+
         $wpdb->update(
             $table_name,
             array('updated_at' => current_time('mysql')),
@@ -614,6 +623,7 @@ function updateProfile($params) {
         return array('error' => 'Invalid email or password');
     }
 }
+
 
 
 
