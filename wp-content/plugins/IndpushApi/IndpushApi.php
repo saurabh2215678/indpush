@@ -573,10 +573,9 @@ function updateProfile($params) {
 
     if ($user && $password === $user->password) {
         if (isset($_FILES['profile_picture']) && !empty($_FILES['profile_picture']['name'])) {
-            // Check if the file is an image
-            $file_info = getimagesize($_FILES['profile_picture']['tmp_name']);
-            
-            if ($file_info !== false) {
+            // Ensure that the file is an image
+            $file_type = wp_check_filetype($_FILES['profile_picture']['name'], array('jpeg', 'jpg', 'gif', 'png'));
+            if ($file_type['ext']) {
                 $upload_overrides = array('test_form' => false);
                 $file = wp_handle_upload($_FILES['profile_picture'], $upload_overrides);
 
