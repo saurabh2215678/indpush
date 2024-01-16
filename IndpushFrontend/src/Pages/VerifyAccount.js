@@ -33,7 +33,7 @@ const VerifyAccount = () => {
 
     useEffect(()=>{
         formData.email = user.email;
-    },[user, formData]);
+    },[user]);
     
     const handleFormData =(e)=>{
        const name = e.target.name;

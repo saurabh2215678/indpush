@@ -186,7 +186,7 @@ function resendOtpToUser($params){
     $user_data = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE email = %s", $useremail));
     $user_id = $user_data->id;
     $mailResp = sendOtpForUser($user_id, $params['email']);
-    return array('message' => 'otp sent successfully check your mail', 'mailsent' => $mailResp);
+    return $mailResp;
 }
 
 function createUser($params){
