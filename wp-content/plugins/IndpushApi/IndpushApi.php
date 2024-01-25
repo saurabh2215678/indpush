@@ -573,23 +573,32 @@ function updateProfile($params) {
 
     if ($user && $password === $user->password) {
         if (isset($_FILES['profile_picture']) && !empty($_FILES['profile_picture']['name'])) {
-            // Ensure that the file is an image
-            $file_type = wp_check_filetype($_FILES['profile_picture']['name'], array('jpeg', 'jpg', 'gif', 'png'));
-            return array('filetype' => $file_type);
-            if ($file_type['ext']) {
-                $upload_overrides = array('test_form' => false);
-                $file = wp_handle_upload($_FILES['profile_picture'], $upload_overrides);
+            
+			$plugin_dir = plugin_dir_path(__FILE__);
+			$storage_folder = $plugin_dir . 'storage/';
 
-                if (!empty($file['error'])) {
-                    return array('error' => $file['error']);
-                }
-
-                $profile_picture_url = $file['url'];
+			if (!file_exists($storage_folder)) {
+				mkdir($storage_folder);
+			}
+            $extensions = array('jpeg', 'jpg', 'gif', 'png');
+			$fileobj =  $_FILES['profile_picture'];
+			
+			$file_extension = strtolower(pathinfo($fileobj['name'], PATHINFO_EXTENSION));
+            $validFile = in_array($file_extension, $extensions);
+			
+            if ($validFile) {
+				
+				$file_name = $fileobj['name'];
+				$file_path = $storage_folder . $file_name;
+				move_uploaded_file($fileobj['tmp_name'], $file_path);
+				$file_url = plugins_url('storage/' . $file_name, __FILE__);
+				
+                
 
                 $wpdb->update(
                     $table_name,
                     array(
-                        'profile_picture' => $profile_picture_url,
+                        'profile_picture' => $file_url,
                     ),
                     array('id' => $user->id)
                 );
