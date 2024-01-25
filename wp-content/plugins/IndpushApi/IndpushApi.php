@@ -46,6 +46,10 @@ function indpushApi() {
         'methods' => array('GET', 'POST'),
         'callback' => 'resetPasswordApi',
     ));
+    register_rest_route('api', '/download-zip', array(
+        'methods' => array('GET', 'POST'),
+        'callback' => 'download_og_files_rest_endpoint',
+    ));
 
 }
 function signupFunction($request){
@@ -465,8 +469,8 @@ function validateResetPasswordLink($request){
             return $response;
         }
 
-        $response_data = validateLink($params);
-        $response = new WP_REST_Response($response_data, 200);
+        $response = validateLink($params);
+        // $response = new WP_REST_Response($response_data, 200);
         $response->set_headers(['Content-Type' => 'application/json']);
         return $response;
     }
@@ -523,8 +527,12 @@ function updateProfileApi($request){
             return $response;
         }
 
-        $response_data = updateProfile($params);
-        $response = new WP_REST_Response($response_data, 200);
+        $response = updateProfile($params);
+        // if($response_data['valid'] == '1'){
+        //     $response = new WP_REST_Response($response_data, 200);
+        // }else{
+        //     $response = new WP_REST_Response($response_data, 500);
+        // }
         $response->set_headers(['Content-Type' => 'application/json']);
         return $response;
     }
@@ -553,12 +561,15 @@ function validateLink($params) {
         $linkExpirationTime = 3600; // 1 hour in seconds
 
         if (($currentTimestamp - $timestamp) <= $linkExpirationTime) {
-            return array('message' => 'Password reset link is valid');
+            $response_data = array('message' => 'Password reset link is valid');
+            return new WP_REST_Response($response_data, 200);
         } else {
-            return array('message' => 'Password reset link has expired');
+            $response_data = array('message' => 'Password reset link has expired');
+            return new WP_REST_Response($response_data, 500);
         }
     } else {
-        return array('message' => 'Invalid password reset link');
+        $response_data = array('message' => 'Invalid password reset link');
+        return new WP_REST_Response($response_data, 500);
     }
 }
 
@@ -573,22 +584,32 @@ function updateProfile($params) {
 
     if ($user && $password === $user->password) {
         if (isset($_FILES['profile_picture']) && !empty($_FILES['profile_picture']['name'])) {
-            // Ensure that the file is an image
-            $file_type = wp_check_filetype($_FILES['profile_picture']['name'], array('jpeg', 'jpg', 'gif', 'png'));
-            if ($file_type['ext']) {
-                $upload_overrides = array('test_form' => false);
-                $file = wp_handle_upload($_FILES['profile_picture'], $upload_overrides);
+            
+			$plugin_dir = plugin_dir_path(__FILE__);
+			$storage_folder = $plugin_dir . 'storage/';
 
-                if (!empty($file['error'])) {
-                    return array('error' => $file['error']);
-                }
-
-                $profile_picture_url = $file['url'];
+			if (!file_exists($storage_folder)) {
+				mkdir($storage_folder);
+			}
+            $extensions = array('jpeg', 'jpg', 'gif', 'png');
+			$fileobj =  $_FILES['profile_picture'];
+			
+			$file_extension = strtolower(pathinfo($fileobj['name'], PATHINFO_EXTENSION));
+            $validFile = in_array($file_extension, $extensions);
+			
+            if ($validFile) {
+				
+				$file_name = $fileobj['name'];
+				$file_path = $storage_folder . $file_name;
+				move_uploaded_file($fileobj['tmp_name'], $file_path);
+				$file_url = plugins_url('storage/' . $file_name, __FILE__);
+				
+                
 
                 $wpdb->update(
                     $table_name,
                     array(
-                        'profile_picture' => $profile_picture_url,
+                        'profile_picture' => $file_url,
                     ),
                     array('id' => $user->id)
                 );
@@ -617,14 +638,63 @@ function updateProfile($params) {
             array('updated_at' => current_time('mysql')),
             array('id' => $user->id)
         );
+        $response = array('message' => 'Profile updated successfully');
 
-        return array('message' => 'Profile updated successfully');
+        return new WP_REST_Response($response, 200);
     } else {
-        return array('error' => 'Invalid email or password');
+        $response = array('error' => 'Invalid email or password');
+        return new WP_REST_Response($response, 500);
     }
 }
 
 
+function download_og_files_rest_endpoint( $request ) {
+    // Define the path to the folder you want to zip
+    $folder_path = plugin_dir_path( __FILE__ ) . 'ogFiles/';
+
+    // Initialize a new ZipArchive object
+    $zip = new ZipArchive();
+    
+    // Define the name of the zip file
+    $zip_file = plugin_dir_path( __FILE__ ) . 'ogFiles.zip';
+
+    // Open or create the zip file
+    if ( $zip->open( $zip_file, ZipArchive::CREATE | ZipArchive::OVERWRITE ) === TRUE ) {
+        // Add files to the zip file
+        $files = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator( $folder_path ),
+            RecursiveIteratorIterator::LEAVES_ONLY
+        );
+
+        foreach ( $files as $name => $file ) {
+            // Skip directories (we only want to add files)
+            if ( !$file->isDir() ) {
+                $filePath = $file->getRealPath();
+                $relativePath = substr( $filePath, strlen( $folder_path ) );
+                $zip->addFile( $filePath, $relativePath );
+            }
+        }
+
+        // Close the zip file
+        $zip->close();
+
+        // Send the zip file as response
+        if ( file_exists( $zip_file ) ) {
+            $response = new WP_REST_Response( file_get_contents( $zip_file ) );
+            $response->set_status( 200 );
+            $response->header( 'Content-Type', 'application/zip' );
+            $response->header( 'Content-Disposition', 'attachment; filename="' . basename( $zip_file ) . '"' );
+
+            // Delete the temporary zip file
+            unlink( $zip_file );
+
+            return $response;
+        } else {
+            // Error handling if the zip file could not be created
+            return new WP_REST_Response( 'Error: Could not create the zip file.', 500 );
+        }
+    }
+}
 
 
 
