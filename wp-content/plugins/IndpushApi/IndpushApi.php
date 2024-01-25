@@ -14,6 +14,10 @@ function indpushApi() {
         'methods' => array('GET', 'POST'),
         'callback' => 'loginFunction',
     ));
+    register_rest_route('api', '/update-profile', array(
+        'methods' => array('GET', 'POST'),
+        'callback' => 'updateProfileApi',
+    ));
     register_rest_route('api', '/firebase-data', array(
         'methods' => array('GET', 'POST'),
         'callback' => 'firebasedata',
@@ -186,7 +190,7 @@ function resendOtpToUser($params){
     $user_data = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE email = %s", $useremail));
     $user_id = $user_data->id;
     $mailResp = sendOtpForUser($user_id, $params['email']);
-    return array('message' => 'otp sent successfully check your mail', 'mailsent' => $mailResp);
+    return $mailResp;
 }
 
 function createUser($params){
@@ -207,6 +211,7 @@ function createUser($params){
         'domains' => sanitize_text_field($params['domains']),
         'user_domain' => sanitize_text_field($params['your_domain']),
         'varified' => false,
+        'user_type' => 'user',
         'status' => 'active',
         'created_at' => current_time('mysql', true),
         'updated_at' => current_time('mysql', true)
@@ -278,8 +283,6 @@ function verifyOtpForUser($params){
     }
 }
 
-
-
 function generateSubscriptionId($email) {
     return md5($email . uniqid());
 }
@@ -301,7 +304,6 @@ function findUser($params){
     $user = $wpdb->get_row($query);
  
     if ($user) {
-        unset($user->password);
         unset($user->otp);
         return array('message' => 'User found', 'user' =>  $user);
     } else {
@@ -499,6 +501,35 @@ function resetPasswordApi($request){
     }
 }
 
+function updateProfileApi($request){
+    if ($request->get_method() === 'GET') {
+        $data = array('message' => 'Method not allowed');
+        $response = new WP_REST_Response($data, 400);
+        $response->set_headers(['Content-Type' => 'application/json']);
+        return $response;
+    } elseif ($request->get_method() === 'POST') {
+        $params = $request->get_params();
+    
+        $required_params = array('email', 'password');
+    
+        $missing_params = array_filter($required_params, function($param) use ($params) {
+            return !isset($params[$param]) || empty($params[$param]);
+        });
+    
+        if (!empty($missing_params)) {
+            $data = array('message' => 'Required parameters missing or empty', 'missing_params' => $missing_params);
+            $response = new WP_REST_Response($data, 400);
+            $response->set_headers(['Content-Type' => 'application/json']);
+            return $response;
+        }
+
+        $response_data = updateProfile($params);
+        $response = new WP_REST_Response($response_data, 200);
+        $response->set_headers(['Content-Type' => 'application/json']);
+        return $response;
+    }
+}
+
 function validateLink($params) {
     global $wpdb;
     $table_name = $wpdb->prefix . 'indpush_user';
@@ -530,6 +561,72 @@ function validateLink($params) {
         return array('message' => 'Invalid password reset link');
     }
 }
+
+function updateProfile($params) {
+    global $wpdb;
+
+    $table_name = $wpdb->prefix . 'indpush_user';
+    $email = sanitize_text_field($params['email']);
+    $password = sanitize_text_field($params['password']);
+    
+    $user = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE email = %s", $email));
+
+    if ($user && $password === $user->password) {
+        if (isset($_FILES['profile_picture']) && !empty($_FILES['profile_picture']['name'])) {
+            // Ensure that the file is an image
+            $file_type = wp_check_filetype($_FILES['profile_picture']['name'], array('jpeg', 'jpg', 'gif', 'png'));
+            if ($file_type['ext']) {
+                $upload_overrides = array('test_form' => false);
+                $file = wp_handle_upload($_FILES['profile_picture'], $upload_overrides);
+
+                if (!empty($file['error'])) {
+                    return array('error' => $file['error']);
+                }
+
+                $profile_picture_url = $file['url'];
+
+                $wpdb->update(
+                    $table_name,
+                    array(
+                        'profile_picture' => $profile_picture_url,
+                    ),
+                    array('id' => $user->id)
+                );
+            } else {
+                return array('error' => 'Invalid file type. Please upload a valid image.');
+            }
+        }
+
+        // Update other fields in the user data if provided in $params
+        $name = isset($params['name']) ? sanitize_text_field($params['name']) : $user->name;
+        $user_domain = isset($params['user_domain']) ? sanitize_text_field($params['user_domain']) : $user->user_domain;
+        $domains = isset($params['domains']) ? sanitize_text_field($params['domains']) : $user->domains;
+
+        $wpdb->update(
+            $table_name,
+            array(
+                'name' => $name,
+                'user_domain' => $user_domain,
+                'domains' => $domains,
+            ),
+            array('id' => $user->id)
+        );
+
+        $wpdb->update(
+            $table_name,
+            array('updated_at' => current_time('mysql')),
+            array('id' => $user->id)
+        );
+
+        return array('message' => 'Profile updated successfully');
+    } else {
+        return array('error' => 'Invalid email or password');
+    }
+}
+
+
+
+
 
 function resetPassword($params){
     $resetPasswordLink = sanitize_text_field($params['password-link']);
@@ -608,6 +705,7 @@ function createUserTable(){
         subscription_id varchar(255),
         user_domain TEXT,
         domains TEXT,
+        user_type varchar(255),
         password varchar(255),
         otp mediumint(9),
         varified BOOLEAN,

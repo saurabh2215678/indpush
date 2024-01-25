@@ -12,17 +12,25 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Home from './Pages/Home.js';
 import VerifyAccount from './Pages/VerifyAccount.js';
+import UserAuth from './Components/UserAuth.js';
+import ForgotPassword from './Pages/ForgotPassword.js';
+import ResetPassword from './Pages/ResetPassword.js';
+import ProfileUpadate from './Pages/ProfileUpadate.js';
+import Setting from './Pages/Setting.js';
 
 function App() {
 
   return (
     <div>
    <Provider store={store}>
+    <UserAuth/>
     <Router>
       <Routes>
 
         <Route path="/login" element={ <Login />}/>
         <Route path="/signup" element={<Signup />}/>
+        <Route path="/forgot-password" element={<ForgotPassword />}/>
+        <Route path="/reset-password/*" element={<ResetPassword />}/>
         <Route element={<WebsiteLayout/>}>
           <Route path="/" element={<Home />}/>
           <Route path="*" element={<PageNotFound />} />
@@ -30,6 +38,8 @@ function App() {
         <Route element={<UserLayout />}>
           <Route path="/dashboard" element={<Dashboard />}/>
           <Route path="/verify-account" element={<VerifyAccount />}/>
+          <Route path="/update-profile" element={<ProfileUpadate />}/>
+          <Route path="/setting" element={<Setting />}/>
         </Route>
    
       </Routes>

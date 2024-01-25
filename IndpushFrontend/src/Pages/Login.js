@@ -52,7 +52,11 @@ return (
              <input className="form-control"  onChange={handleFormData}  type="text" name="email"  placeholder="Email Id" />
             
                <input className="form-control" onChange={handleFormData}  type="password" name="password" placeholder="Password" />
-                <a className='mt-1 mb-4 forgot_pass' href="#!">Forgot password?</a>
+               {formData?.email ? 
+                  <Link className='mt-1 mb-4 forgot_pass' to={`/forgot-password?email=${formData.email}`}>Forgot password? 1</Link>:
+                  <Link  className='mt-1 mb-4 forgot_pass' to={`/forgot-password`}>Forgot password?</Link>
+               }
+
             <div className="d-flex">
                {userLoading ? 
                <button type="button" className="form-control ms-2" >Loading...</button> :
