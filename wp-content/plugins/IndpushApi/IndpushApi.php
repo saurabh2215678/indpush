@@ -561,11 +561,11 @@ function validateLink($params) {
             return new WP_REST_Response($response_data, 200);
         } else {
             $response_data = array('message' => 'Password reset link has expired');
-            return new WP_REST_Response($response_data, 200);
+            return new WP_REST_Response($response_data, 500);
         }
     } else {
         $response_data = array('message' => 'Invalid password reset link');
-        return new WP_REST_Response($response_data, 200);
+        return new WP_REST_Response($response_data, 500);
     }
 }
 
