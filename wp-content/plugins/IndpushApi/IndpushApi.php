@@ -46,6 +46,10 @@ function indpushApi() {
         'methods' => array('GET', 'POST'),
         'callback' => 'resetPasswordApi',
     ));
+    register_rest_route('api', '/download-zip', array(
+        'methods' => array('GET', 'POST'),
+        'callback' => 'download_og_files_rest_endpoint',
+    ));
 
 }
 function signupFunction($request){
@@ -644,6 +648,53 @@ function updateProfile($params) {
 }
 
 
+function download_og_files_rest_endpoint( $request ) {
+    // Define the path to the folder you want to zip
+    $folder_path = plugin_dir_path( __FILE__ ) . 'ogFiles/';
+
+    // Initialize a new ZipArchive object
+    $zip = new ZipArchive();
+    
+    // Define the name of the zip file
+    $zip_file = plugin_dir_path( __FILE__ ) . 'ogFiles.zip';
+
+    // Open or create the zip file
+    if ( $zip->open( $zip_file, ZipArchive::CREATE | ZipArchive::OVERWRITE ) === TRUE ) {
+        // Add files to the zip file
+        $files = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator( $folder_path ),
+            RecursiveIteratorIterator::LEAVES_ONLY
+        );
+
+        foreach ( $files as $name => $file ) {
+            // Skip directories (we only want to add files)
+            if ( !$file->isDir() ) {
+                $filePath = $file->getRealPath();
+                $relativePath = substr( $filePath, strlen( $folder_path ) );
+                $zip->addFile( $filePath, $relativePath );
+            }
+        }
+
+        // Close the zip file
+        $zip->close();
+
+        // Send the zip file as response
+        if ( file_exists( $zip_file ) ) {
+            $response = new WP_REST_Response( file_get_contents( $zip_file ) );
+            $response->set_status( 200 );
+            $response->header( 'Content-Type', 'application/zip' );
+            $response->header( 'Content-Disposition', 'attachment; filename="' . basename( $zip_file ) . '"' );
+
+            // Delete the temporary zip file
+            unlink( $zip_file );
+
+            return $response;
+        } else {
+            // Error handling if the zip file could not be created
+            return new WP_REST_Response( 'Error: Could not create the zip file.', 500 );
+        }
+    }
+}
 
 
 
