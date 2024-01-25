@@ -524,7 +524,11 @@ function updateProfileApi($request){
         }
 
         $response_data = updateProfile($params);
-        $response = new WP_REST_Response($response_data, 200);
+        if($response_data['valid'] == '1'){
+            $response = new WP_REST_Response($response_data, 200);
+        }else{
+            $response = new WP_REST_Response($response_data, 500);
+        }
         $response->set_headers(['Content-Type' => 'application/json']);
         return $response;
     }
@@ -553,12 +557,12 @@ function validateLink($params) {
         $linkExpirationTime = 3600; // 1 hour in seconds
 
         if (($currentTimestamp - $timestamp) <= $linkExpirationTime) {
-            return array('message' => 'Password reset link is valid');
+            return array('message' => 'Password reset link is valid', 'valid' => '1');
         } else {
-            return array('message' => 'Password reset link has expired');
+            return array('message' => 'Password reset link has expired', 'valid' => '0');
         }
     } else {
-        return array('message' => 'Invalid password reset link');
+        return array('message' => 'Invalid password reset link', 'valid' => '0');
     }
 }
 
