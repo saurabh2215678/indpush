@@ -465,8 +465,8 @@ function validateResetPasswordLink($request){
             return $response;
         }
 
-        $response_data = validateLink($params);
-        $response = new WP_REST_Response($response_data, 200);
+        $response = validateLink($params);
+        // $response = new WP_REST_Response($response_data, 200);
         $response->set_headers(['Content-Type' => 'application/json']);
         return $response;
     }
@@ -557,12 +557,15 @@ function validateLink($params) {
         $linkExpirationTime = 3600; // 1 hour in seconds
 
         if (($currentTimestamp - $timestamp) <= $linkExpirationTime) {
-            return array('message' => 'Password reset link is valid', 'valid' => '1');
+            $response_data = array('message' => 'Password reset link is valid');
+            return new WP_REST_Response($response_data, 200);
         } else {
-            return array('message' => 'Password reset link has expired', 'valid' => '0');
+            $response_data = array('message' => 'Password reset link has expired');
+            return new WP_REST_Response($response_data, 200);
         }
     } else {
-        return array('message' => 'Invalid password reset link', 'valid' => '0');
+        $response_data = array('message' => 'Invalid password reset link');
+        return new WP_REST_Response($response_data, 200);
     }
 }
 
