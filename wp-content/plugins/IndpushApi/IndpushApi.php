@@ -523,12 +523,12 @@ function updateProfileApi($request){
             return $response;
         }
 
-        $response_data = updateProfile($params);
-        if($response_data['valid'] == '1'){
-            $response = new WP_REST_Response($response_data, 200);
-        }else{
-            $response = new WP_REST_Response($response_data, 500);
-        }
+        $response = updateProfile($params);
+        // if($response_data['valid'] == '1'){
+        //     $response = new WP_REST_Response($response_data, 200);
+        // }else{
+        //     $response = new WP_REST_Response($response_data, 500);
+        // }
         $response->set_headers(['Content-Type' => 'application/json']);
         return $response;
     }
@@ -631,10 +631,12 @@ function updateProfile($params) {
             array('updated_at' => current_time('mysql')),
             array('id' => $user->id)
         );
+        $response = array('message' => 'Profile updated successfully');
 
-        return array('message' => 'Profile updated successfully');
+        return new WP_REST_Response($response, 200);
     } else {
-        return array('error' => 'Invalid email or password');
+        $response = array('error' => 'Invalid email or password');
+        return new WP_REST_Response($response, 500);
     }
 }
 
