@@ -575,6 +575,7 @@ function updateProfile($params) {
         if (isset($_FILES['profile_picture']) && !empty($_FILES['profile_picture']['name'])) {
             // Ensure that the file is an image
             $file_type = wp_check_filetype($_FILES['profile_picture']['name'], array('jpeg', 'jpg', 'gif', 'png'));
+            return array('filetype' => $file_type);
             if ($file_type['ext']) {
                 $upload_overrides = array('test_form' => false);
                 $file = wp_handle_upload($_FILES['profile_picture'], $upload_overrides);
