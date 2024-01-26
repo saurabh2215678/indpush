@@ -1,0 +1,62 @@
+[
+    {
+        "id": "1",
+        "device_token": "eSO2gbN74NCK3rL5tSvk2G:APA91bEIXncx8PqFS7sFlPvcDe-sh1kiZlEifVAnlBHADL5hxIqCGNcYNtCLKexCY1dWv_SYAGVVvzahueIXy46cNCCIWE9fp3_vE9ea1WttpGPCZzI-ZErzAv8FQI7lq0bTKC1X4ZqS",
+        "created_at": "2023-12-03 12:50:11",
+        "updated_at": "2023-12-03 12:52:38"
+    },
+    {
+        "id": "2",
+        "device_token": "esIAdoa1ssTC_P2ANo009l:APA91bEMzbUFQXzDR8Ic8a4fvtrs2EWBn3sxWryj_SnhhPW7mOf9HCXk5iXkjqA1yCMu1qo_JayoH32y6kI2UHPrVlJmHv1Fb6ORe3pmgg3JswRIlVcnBJs-Oxxnkwr0j1aqCdYhoblY",
+        "created_at": "2023-12-03 12:58:26",
+        "updated_at": "2023-12-03 12:58:26"
+    },
+    {
+        "id": "3",
+        "device_token": "eZIMIiNCbvNHtP-Uxrg7ki:APA91bGPM2YUQi1OQGkfAPH0vp5-U5NFAIP7gDa4cd09wzLSqtXhDZueVG-BwstHVPKtDDQI3FOujf3k0WF885EI6_nIeAAIRMI4GN9oGc187hNt7VZ6oc5cMLyr8e3-eG9A8fTS2Drk",
+        "created_at": "2023-12-03 13:12:12",
+        "updated_at": "2023-12-03 13:12:12"
+    },
+    {
+        "id": "4",
+        "device_token": "fyXbAHk9U8fCIyafpXYuRC:APA91bF1DZlcKhsu-N9-Iyg9IteQlidqPGkm9C9KZPI1wbngrkDVncJow6MJ5F9YraeQ1Qaj5Gl9TOAYaYsmeA3BXTmCALoJlFpaT1eu9m3qJCLkbVHpDbqmihosP15cVnyp3ymdVw9p",
+        "created_at": "2023-12-03 13:19:15",
+        "updated_at": "2023-12-03 13:20:07"
+    },
+    {
+        "id": "5",
+        "device_token": "dr8GSXsvIpt_4IfjByPQth:APA91bGR1L6dk4-3GmFBbW1VFddnu9gn42A2QisqkUh6F9L0rB-dGwQ60_WD28J-aRR4V0TpwqiOrqc4DrjYD1XA6x--bMFDAYaQ_9ceqWSeSqz-asCAFA3Ah1RBc2UgcnZ5Tot9lJdS",
+        "created_at": "2023-12-03 13:24:29",
+        "updated_at": "2023-12-03 13:24:29"
+    },
+    {
+        "id": "6",
+        "device_token": "dOY_Nm9fn1Qczv2jy0o6NH:APA91bHwMId0Y0YAfGb4WZ8YJw4kuEHBx1NM46nI_LEudghPTUmHqzTPifECiEUOPFfB4UApzTZhboDk8t06NO5YAx9urv_GRod5HkhPCfM56OHciKgud1Yl3wPYs1ab5mOTdXsiK2AH",
+        "created_at": "2023-12-03 13:38:17",
+        "updated_at": "2023-12-03 13:38:17"
+    },
+    {
+        "id": "7",
+        "device_token": "dOY_Nm9fn1Qczv2jy0o6NH:APA91bH-1Aebgez8NTafwROQCs2naDcxkxL1mMERbu1axXXpHNOKvnadoFdRTPyKQOnTSsH095FC070DVxMhCE2AWcxaQ7dMkL_fj0TQ5W7q7oxjxi4Gcm4GrEN-zTfCGnRM4hxhoW7V",
+        "created_at": "2023-12-03 13:38:25",
+        "updated_at": "2023-12-03 13:38:25"
+    },
+    {
+        "id": "8",
+        "device_token": "dOY_Nm9fn1Qczv2jy0o6NH:APA91bHH056gfZONVCaF2uhTF_kP2VdigjmCYhuM8Z-Vpjk-JmLlJ5FMjiK5EGCPh5rWt1Xg7QwYrCOdvihiKk95DL7vwzRWQNzessG5iOpGRgLBut4BGG0pm1ZpegliEx6jn1rdOzPk",
+        "created_at": "2023-12-03 13:38:37",
+        "updated_at": "2023-12-03 13:49:50"
+    },
+    {
+        "id": "9",
+        "device_token": "flWDgoju4Z6eadcjvH3vkS:APA91bGIuDEzifE83z8JZRwj3-yqc7pt4WDfJmsALLIi51mjYGoAiFRzuLR1tXED3gbw_6jKKdMvh_kBCYCNFlVWqzr5rC_IPdUsfoCC5l93PwGsfeKnMWh7_UrGst8nPhkdWVxmbioe",
+        "created_at": "2023-12-03 13:57:52",
+        "updated_at": "2023-12-03 13:59:29"
+    },
+    {
+        "id": "10",
+        "device_token": "fBzFxYi_EeW9gNAj46-EOM:APA91bG0G97AuVDyKcW4XL5_f4RkDhA-ou1qrt4ornD_PvjesSzHiNr_KjMOp6j7Tjwm3B04L_BwECf6azKqnk8MhHUQlvuYXD4g23SU0pITfRObdk8qH9i50ups3RZhwUeiOc4EtUU9",
+        "created_at": "2023-12-03 14:00:52",
+        "updated_at": "2023-12-14 17:19:31"
+    }
+]

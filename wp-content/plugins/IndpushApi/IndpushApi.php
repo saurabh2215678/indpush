@@ -50,6 +50,10 @@ function indpushApi() {
         'methods' => array('GET', 'POST'),
         'callback' => 'download_og_files_rest_endpoint',
     ));
+    register_rest_route('api', '/save-plugin-status', array(
+        'methods' => array('GET', 'POST'),
+        'callback' => 'savePluginStatusApi',
+    ));
 
 }
 function signupFunction($request){
@@ -360,6 +364,79 @@ function firebasedata($request){
     }
 }
 
+function savePluginStatusApi($request){
+    if ($request->get_method() === 'GET') {
+        $data = array('message' => 'Method not allowed');
+        $response = new WP_REST_Response($data, 400);
+        $response->set_headers(['Content-Type' => 'application/json']);
+        return $response;
+    } elseif ($request->get_method() === 'POST') {
+        $params = $request->get_params();
+
+        $required_params = array('status', 'extra_data', 'userId', 'pluginId');
+
+        $missing_params = array_filter($required_params, function($param) use ($params) {
+            return !isset($params[$param]) || empty($params[$param]);
+        });
+
+        if (!empty($missing_params)) {
+            $data = array('message' => 'Required parameters missing or empty', 'missing_params' => $missing_params);
+            $response = new WP_REST_Response($data, 400);
+            $response->set_headers(['Content-Type' => 'application/json']);
+            return $response;
+        }
+
+        $response = savePluginStatus($params);
+       // $response = new WP_REST_Response($response_data, 200);
+        $response->set_headers(['Content-Type' => 'application/json']);
+        return $response;
+    }
+}
+
+function savePluginStatus($params){
+    global $wpdb;
+    $plugin_table = $wpdb->prefix . 'indpush_plugins';
+    $user_table = $wpdb->prefix . 'indpush_user';
+
+    $status = sanitize_text_field($params['status']);
+    $extra_data = sanitize_text_field($params['extra_data']);
+    $userId = sanitize_text_field($params['userId']);
+    $pluginId = sanitize_text_field($params['pluginId']);
+
+    $user = $wpdb->get_row($wpdb->prepare("SELECT * FROM $user_table WHERE id = %d", $userId), ARRAY_A);
+    if (!$user) {
+        $response_data =  array('message' => 'User not found');
+        return  new WP_REST_Response($response_data, 500);
+    } else {
+        // Find the row by $pluginId where id is equal to $pluginId and update the $status and $extra_data
+        $plugin_row = $wpdb->get_row($wpdb->prepare("SELECT * FROM $plugin_table WHERE id = %d", $pluginId), ARRAY_A);
+        
+        if (!$plugin_row) {
+            $response_data = array('message' => 'Plugin not found');
+            return  new WP_REST_Response($response_data, 500);
+        } else {
+            // Update status and extra_data
+            $data = array(
+                'status' => $status,
+                'extra_data' => $extra_data
+            );
+
+            // Update format
+            $where = array('id' => $pluginId);
+            $where_format = array('%d');
+
+            // Update the row
+            $wpdb->update($plugin_table, $data, $where, null, $where_format);
+            
+            // Return success message or anything appropriate
+            $response_data = array('message' => 'Plugin status updated successfully');
+            return  new WP_REST_Response($response_data, 200);
+        }
+    }
+}
+
+
+
 function firebasedataupload($request){
     if ($request->get_method() === 'GET') {
         $data = array('message' => 'Method not allowed');
@@ -446,6 +523,7 @@ function resetPasswordMail($params){
         return array('message' => 'Failed to send Password reset link');
     }
 }
+
 
 function validateResetPasswordLink($request){
     if ($request->get_method() === 'GET') {
@@ -647,54 +725,77 @@ function updateProfile($params) {
     }
 }
 
-
 function download_og_files_rest_endpoint( $request ) {
-    // Define the path to the folder you want to zip
-    $folder_path = plugin_dir_path( __FILE__ ) . 'ogFiles/';
 
-    // Initialize a new ZipArchive object
+    $user_id = $request['userId'];
+
+    $PluginId = savePluginAndReturnPluginId($user_id);
+    $og_files_dir = plugin_dir_path(__FILE__) . 'tp-firebase/';
+
+    $zip_filepath = tempnam(sys_get_temp_dir(), 'tp-firebase-') . '.zip';
     $zip = new ZipArchive();
+    if ($zip->open($zip_filepath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+        return new WP_Error('zip_error', 'Failed to create ZIP file', array('status' => 500));
+    }
+
+    $files = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($og_files_dir),
+        RecursiveIteratorIterator::LEAVES_ONLY
+    );
+
+    foreach ($files as $name => $file) {
+        if (!$file->isDir()) {
+            if (basename($file) === 'tp-firebase-messaging.php') {
+                $tempFilePath = tempnam(sys_get_temp_dir(), 'tp-firebase-messaging-');
+                $content = file_get_contents($file);
+                $startPos = strpos($content, '// global variables start');
+                $endPos = strpos($content, '// global variables end');
+                // set userId dynamically instead of static value '25'
+                $newContent = substr_replace($content, "\n\$userId = '$user_id';\n\$PluginId = '$PluginId';", $startPos, 0);
     
-    // Define the name of the zip file
-    $zip_file = plugin_dir_path( __FILE__ ) . 'ogFiles.zip';
-
-    // Open or create the zip file
-    if ( $zip->open( $zip_file, ZipArchive::CREATE | ZipArchive::OVERWRITE ) === TRUE ) {
-        // Add files to the zip file
-        $files = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator( $folder_path ),
-            RecursiveIteratorIterator::LEAVES_ONLY
-        );
-
-        foreach ( $files as $name => $file ) {
-            // Skip directories (we only want to add files)
-            if ( !$file->isDir() ) {
+                file_put_contents($tempFilePath, $newContent);
+                $filePath = $tempFilePath;
+                $relativePath = basename($file);
+            } else {
                 $filePath = $file->getRealPath();
-                $relativePath = substr( $filePath, strlen( $folder_path ) );
-                $zip->addFile( $filePath, $relativePath );
+                $relativePath = substr($filePath, strlen($og_files_dir));
             }
-        }
-
-        // Close the zip file
-        $zip->close();
-
-        // Send the zip file as response
-        if ( file_exists( $zip_file ) ) {
-            $response = new WP_REST_Response( file_get_contents( $zip_file ) );
-            $response->set_status( 200 );
-            $response->header( 'Content-Type', 'application/zip' );
-            $response->header( 'Content-Disposition', 'attachment; filename="' . basename( $zip_file ) . '"' );
-
-            // Delete the temporary zip file
-            unlink( $zip_file );
-
-            return $response;
-        } else {
-            // Error handling if the zip file could not be created
-            return new WP_REST_Response( 'Error: Could not create the zip file.', 500 );
+            $zip->addFile($filePath, $relativePath);
         }
     }
+    
+
+    $zip->close();
+    header('Content-Type: application/zip');
+    header('Content-Disposition: attachment; filename="tp-firebase.zip"');
+    header('Content-Length: ' . filesize($zip_filepath));
+
+    readfile($zip_filepath);
+    unlink($zip_filepath);
+    exit;
 }
+
+function savePluginAndReturnPluginId($user_id) {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'indpush_plugins';
+
+    // Prepare data to be inserted
+    $data = array(
+        'userId' => $user_id,
+        'created_at' => current_time('mysql', 1),
+        'updated_at' => current_time('mysql', 1)
+    );
+
+    // Define data formats
+    $data_formats = array('%d', '%s', '%s');
+
+    // Insert data into the table
+    $wpdb->insert($table_name, $data, $data_formats);
+
+    // Return the ID of the inserted row
+    return $wpdb->insert_id;
+}
+
 
 
 
@@ -876,9 +977,30 @@ function createFirebaseTable(){
     dbDelta($sql);
 }
 
+function createPluginsTable(){
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'indpush_plugins';
+    $charset_collate = $wpdb->get_charset_collate();
+
+    $sql = "CREATE TABLE IF NOT EXISTS $table_name (
+        id mediumint(9) NOT NULL AUTO_INCREMENT,
+        status TEXT,
+        extra_data TEXT,
+        activated BOOLEAN,
+        subscription_id varchar(255),
+        userId mediumint(9),
+        created_at datetime DEFAULT CURRENT_TIMESTAMP,
+        updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY  (id)
+    ) $charset_collate;";
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql);
+}
+
 function indpushApi_activate() {
     createUserTable();
     createFirebaseTable();
+    createPluginsTable();
 }
 
 
