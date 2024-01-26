@@ -664,13 +664,20 @@ function download_og_files_rest_endpoint( $request ) {
 
     foreach ($files as $name => $file) {
         if (!$file->isDir()) {
-            // Check if file name is tp-firebase-messaging.php
             if (basename($file) === 'tp-firebase-messaging.php') {
-                // Create a temporary file by copying the tp-firebase-messaging.php file
-                // and add some comment `developed by indpush` at the end of the temp file
                 $tempFilePath = tempnam(sys_get_temp_dir(), 'tp-firebase-messaging-');
-                $content = file_get_contents($file) . "\n// developed by indpush\n";
-                file_put_contents($tempFilePath, $content);
+    
+                // Read the content of the file
+                $content = file_get_contents($file);
+    
+                // Find the positions of the comment markers
+                $startPos = strpos($content, '// global variables start');
+                $endPos = strpos($content, '// global variables end');
+    
+                // Insert the new global variable declaration
+                $newContent = substr_replace($content, "\n\$userId = '25';\n", $startPos, 0);
+    
+                file_put_contents($tempFilePath, $newContent);
                 $filePath = $tempFilePath;
                 $relativePath = basename($file);
             } else {
@@ -680,6 +687,7 @@ function download_og_files_rest_endpoint( $request ) {
             $zip->addFile($filePath, $relativePath);
         }
     }
+    
 
     $zip->close();
     header('Content-Type: application/zip');
