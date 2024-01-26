@@ -649,6 +649,9 @@ function updateProfile($params) {
 
 function download_og_files_rest_endpoint( $request ) {
 
+    // get 'userId' param from $request;
+    $user_id = $request['userId']; // Assuming 'userId' is a parameter in the $request object
+
     $og_files_dir = plugin_dir_path(__FILE__) . 'tp-firebase/';
 
     $zip_filepath = tempnam(sys_get_temp_dir(), 'tp-firebase-') . '.zip';
@@ -669,7 +672,8 @@ function download_og_files_rest_endpoint( $request ) {
                 $content = file_get_contents($file);
                 $startPos = strpos($content, '// global variables start');
                 $endPos = strpos($content, '// global variables end');
-                $newContent = substr_replace($content, "\n\$userId = '25';\n", $startPos, 0);
+                // set userId dynamically instead of static value '25'
+                $newContent = substr_replace($content, "\n\$userId = '$user_id';\n", $startPos, 0);
     
                 file_put_contents($tempFilePath, $newContent);
                 $filePath = $tempFilePath;
@@ -692,6 +696,7 @@ function download_og_files_rest_endpoint( $request ) {
     unlink($zip_filepath);
     exit;
 }
+
 
 
 
