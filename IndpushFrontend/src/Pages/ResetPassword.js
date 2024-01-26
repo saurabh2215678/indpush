@@ -44,6 +44,9 @@ function ResetPassword() {
                 }
         });
         const data = await responce.json();
+        if(responce.status != 200){
+            navigate('/forgot-password')
+        }
         // console.log(data);
         // if(responce.status != 200){
         //     navigate('/forgot-password')
@@ -65,10 +68,11 @@ function ResetPassword() {
                 }   
         });
         const data = await responce.json();
-        // console.log(data)
-        if(responce.status == 200){
-            navigate('/login')
-        }
+        // console.log('ggg',data);
+        // console.log('ppp',responce);
+        // if(responce.status == 200){
+        //     navigate('/login')
+        // }
     }
 
 
@@ -76,10 +80,12 @@ function ResetPassword() {
     useEffect(()=>{
         hitApi()
     },[]);
+  
+
 
 
   return (
-    <div>
+    <>
         <div className='middle_login'>
             <div className='middle_login_inner'>
                 <div className='custom-block bg-white'>
@@ -93,7 +99,7 @@ function ResetPassword() {
                 </div>
             </div>
         </div>
-    </div>
+    </>
   )
 }
 

@@ -1,11 +1,15 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React from 'react'
 import { logout } from '../Redux/slices/user';
-import { useDispatch } from 'react-redux';
-
+import { Link, NavLink } from 'react-router-dom'
+import { useSelector, useDispatch } from "react-redux";
 
 function Leftpanel() {
   const dispatch = useDispatch();
+  const user = useSelector((state) => state.user.user);
+// console.log(user.id)
+
+// const (userId)
 
  const logOut=()=>{
   dispatch(logout());
@@ -35,24 +39,23 @@ function Leftpanel() {
             </a>
           </li>
 
+          
           <li className="nav-item">
-            <a className="nav-link" href="#">
-              <i className="bi-person me-2"></i>
-              Profile
-            </a>
+          <NavLink to="/update-profile" className={({ isActive }) => isActive ? "active nav-link" : "nav-link"}>
+          <i className="bi-person me-2"></i>Upload Profile
+          </NavLink>;
           </li>
-
           <li className="nav-item">
-            <a className="nav-link" href="#">
-              <i className="bi-gear me-2"></i>
-              Settings
-            </a>
+          <NavLink to="/setting" className={({ isActive }) => isActive ? "active nav-link" : "nav-link"}>
+          <i className="bi-gear me-2"></i>
+          Settings
+          </NavLink>;
           </li>
 
           <li className="nav-item">
             <a className="nav-link" href="help-center.html">
               <i className="bi-question-circle me-2"></i>
-              Help Center
+              Download
             </a>
           </li>
 
