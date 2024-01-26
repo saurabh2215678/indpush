@@ -46,3 +46,19 @@
 
   .dropdown-menu {display: block;     right: 0;
     left: auto;} 
+    .user_img {margin-block: 1.5rem;}
+    .user_img img { height: 100px; width: 100px; border-radius: 100px; object-fit: cover;}
+    .add_btn{ all: unset;}
+    .multiple_filed{margin-bottom: 24px;}
+    .multiple_filed .form-control:nth-last-child(2){margin-bottom: 0;    }
+      .multiple_filed .add_btn{ margin-left: auto;
+        display: flex;
+        color: #e63946;
+        font-weight: 500;
+        text-decoration: underline;
+        font-style: italic;
+        font-size: 12px !important;
+        text-transform: uppercase;
+        margin-top: 5px;
+    }
+    

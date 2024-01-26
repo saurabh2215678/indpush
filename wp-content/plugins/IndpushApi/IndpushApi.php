@@ -214,13 +214,13 @@ function getPluginsData(){
 
 function getPluginList($request){
     if ($request->get_method() === 'GET') {
-        $data = getPluginsData();
-        $response = new WP_REST_Response($data, 200);
+        $data = array('message' => 'Method not allowed');
+        $response = new WP_REST_Response($data, 400);
         $response->set_headers(['Content-Type' => 'application/json']);
         return $response;
     } elseif ($request->get_method() === 'POST') {
-        $data = array('message' => 'Method not allowed');
-        $response = new WP_REST_Response($data, 400);
+        $data = getPluginsData();
+        $response = new WP_REST_Response($data, 200);
         $response->set_headers(['Content-Type' => 'application/json']);
         return $response;
     }

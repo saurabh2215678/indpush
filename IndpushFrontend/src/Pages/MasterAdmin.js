@@ -1,6 +1,23 @@
-import React from 'react'
-
+import React, { useEffect } from 'react'
+import { apiURI } from '../utils/common'
 function MasterAdmin() {
+
+    const fetchApi = async () => {
+        const URL = apiURI+ '/get-plugin-list';
+        const response = await fetch(URL,{
+            method:'GET',
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                }
+        });
+        // const data = await response.JSON();
+        console.log(response);
+    }
+
+    useEffect(()=>{
+         fetchApi();
+
+    },[])
   return (
     <main className="main-wrapper col-md-9 ms-sm-auto py-4 col-lg-9 px-md-4 border-start">
     <div className="title-group mb-3">

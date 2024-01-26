@@ -28,6 +28,14 @@ function ProfileUpadate() {
         });
     }
 
+    function handleRemoveAtIndex(indexToRemove) {
+        const newDomains = formData.domains.filter((_, index) => index !== indexToRemove);
+        setFormData({
+            ...formData,
+            domains: newDomains
+        });
+    }
+    
 
    async function hitApi(e){
     e.preventDefault();
@@ -92,26 +100,45 @@ function ProfileUpadate() {
                     <input className="form-control" value={formData.name} type="text" onChange={handleChange} name="name" placeholder="Name" />
                     <input className="form-control"  value={formData.email} onChange={handleChange}  type="text" name="email"  placeholder="Email Id" />
                     {/* <input className="form-control" value={formData.domains} onChange={handleChange} type="text" name="domains" placeholder="Domains Name" /> */}
-
-                    {formData.domains.slice(0, 5).map((domain, index) => (
-    <input
-        key={index}
-        className="form-control"
-        value={domain}
-        name={`additional_domain_${index + 1}`}
-        onChange={(e) => {
-            const newDomains = [...formData.domains];
-            newDomains[index] = e.target.value;
-            setFormData({
-                ...formData,
-                domains: newDomains
-            });
-        }}
-        type="text"
-        placeholder={`Additional Domain ${index + 1}`}
-    />
-))}
-                          <button type="button" onClick={handleAddMore} disabled={formData.domains.length >= 5}>Add More</button>
+                    <div className='multiple_filed'>
+    {formData.domains.slice(0, 5).map((domain, index) => (
+        <div key={index}>
+            <input
+                className="form-control"
+                value={domain}
+                name={`additional_domain_${index + 1}`}
+                onChange={(e) => {
+                    const newDomains = [...formData.domains];
+                    newDomains[index] = e.target.value;
+                    setFormData({
+                        ...formData,
+                        domains: newDomains
+                    });
+                }}
+                type="text"
+                placeholder={`Additional Domain ${index + 1}`}
+            />
+            {index !== 0 && ( // Render Remove button only for indices greater than 0
+                <button
+                    type="button"
+                    className='remove_btn'
+                    onClick={() => handleRemoveAtIndex(index)}
+                    disabled={formData.domains.length === 0}
+                >
+                    Remove
+                </button>
+            )}
+        </div>
+    ))}
+    <button
+        type="button"
+        className='add_btn'
+        onClick={handleAddMore}
+        disabled={formData.domains.length >= 5}
+    >
+        Add More
+    </button>
+</div>
 
                     <input className="form-control" onChange={handleChange} type="text" value={formData.user_domain} name="user_domain" placeholder="Your Domain"/>
                     
@@ -119,7 +146,10 @@ function ProfileUpadate() {
                                               
 
                     <input type='file' className="form-control" name='profile_picture' ref={photoref} />
-                    <img src={userIMG} />
+
+                    <div className='user_img'>
+                        <img src={userIMG} />
+                    </div>
                     <button type="submit" className="form-control ms-2" >Submit</button> 
                 </form>
                 </div>

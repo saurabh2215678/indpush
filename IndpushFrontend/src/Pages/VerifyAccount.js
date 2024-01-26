@@ -32,7 +32,7 @@ const VerifyAccount = () => {
     }
 
     useEffect(()=>{
-        formData.email = user.email;
+        formData.email = user?.email;
     },[user]);
     
     const handleFormData =(e)=>{

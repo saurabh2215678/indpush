@@ -55,11 +55,11 @@ function Nav() {
 
                     <div className="dropdown px-3">
                     <a href="#" onClick={handleClick} className="nav-link dropdown-toggle">
-                    <img
+                    {user?.profile_picture ? <img
                             src={user?.profile_picture}
                             className="profile-image img-fluid"
                             alt=""
-                            />
+                            /> : <i class="bi bi-person-circle"></i>}
                             
                     </a>
                     <AnimatePresence>

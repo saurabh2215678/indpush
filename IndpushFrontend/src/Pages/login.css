@@ -3,5 +3,7 @@
 margin: 0 auto;}
 
 html, body, #root { height: 100%;}
-.middle_login {display: flex; align-items: center; justify-content: center; height: 100%;  }
+.middle_login {display: flex;padding: 35px;  padding-left: var(--sidebar-width, 35px); 
+    overflow: auto; justify-content: center; height: calc(100vh - var(--header-height, 0px));  }
 .forgot_pass { font-size: 0.825rem; text-align: right; display: block;}
+.custom-block-lg {padding: 5rem;}

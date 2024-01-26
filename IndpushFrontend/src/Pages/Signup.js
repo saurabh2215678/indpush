@@ -24,10 +24,12 @@ function Signup() {
    const handleSubmit = async (e)=> {
       e.preventDefault();
       const apiResp = await dispatch(userSignup(formData));
-  
+      
       if(apiResp?.payload?.status === 200){
          toast.success(apiResp.payload.message)
+         console.log('fsfd1', apiResp);
       }else{
+         console.log('fsfd2')
          toast.error(apiResp.payload.message)
       }
       if(apiResp?.payload?.missing_params){

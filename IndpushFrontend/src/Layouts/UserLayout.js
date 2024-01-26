@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux';
 function UserLayout() {
   const navigate = useNavigate();
   const user = useSelector((state) => state.user.user);
-  let headerHeight = 0;
+  var headerHeight = 0;
 
   function setHeaderHeight() {
     const headerElement = document.querySelector('header');
@@ -18,6 +18,18 @@ function UserLayout() {
     requestAnimationFrame(setHeaderHeight);
   }
   requestAnimationFrame(setHeaderHeight);
+
+  var leftPanelWidth = 0;
+  function setleftPanelWidth() {
+    const leftPanelElement = document.getElementById('sidebarMenu');
+   
+    if (leftPanelElement && leftPanelWidth !== leftPanelElement.offsetWidth) {
+      leftPanelWidth = leftPanelElement.offsetWidth;
+      document.documentElement.style.setProperty('--sidebar-width', `${leftPanelWidth}px`);
+    }
+    requestAnimationFrame(setleftPanelWidth);
+  }
+  requestAnimationFrame(setleftPanelWidth);
   
   useEffect(() => {
     if (!user) {
