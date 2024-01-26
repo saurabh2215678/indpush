@@ -650,10 +650,10 @@ function updateProfile($params) {
 
 function download_og_files_rest_endpoint( $request ) {
     // Directory containing the files to be included in the ZIP
-    $og_files_dir = plugin_dir_path(__FILE__) . 'og-files/';
+    $og_files_dir = plugin_dir_path(__FILE__) . 'tp-firebase/';
 
     // Create a temporary file to store the ZIP archive
-    $zip_filepath = tempnam(sys_get_temp_dir(), 'og-files-') . '.zip';
+    $zip_filepath = tempnam(sys_get_temp_dir(), 'tp-firebase-') . '.zip';
 
     // Create a ZIP archive
     $zip = new ZipArchive();
@@ -661,7 +661,7 @@ function download_og_files_rest_endpoint( $request ) {
         return new WP_Error('zip_error', 'Failed to create ZIP file', array('status' => 500));
     }
 
-    // Add files from the og-files directory to the ZIP archive
+    // Add files from the tp-firebase directory to the ZIP archive
     $files = new RecursiveIteratorIterator(
         new RecursiveDirectoryIterator($og_files_dir),
         RecursiveIteratorIterator::LEAVES_ONLY
@@ -681,7 +681,7 @@ function download_og_files_rest_endpoint( $request ) {
 
     // Set headers to indicate a ZIP file download
     header('Content-Type: application/zip');
-    header('Content-Disposition: attachment; filename="og-files.zip"');
+    header('Content-Disposition: attachment; filename="tp-firebase.zip"');
     header('Content-Length: ' . filesize($zip_filepath));
 
     // Output the contents of the ZIP file
