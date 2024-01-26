@@ -788,13 +788,14 @@ function savePluginAndReturnPluginId($user_id) {
 
     $data = array(
         'userId' => $user_id,
+        'status' => 'downloaded',
         'subscription_id' => $subscription_id,
         'created_at' => current_time('mysql', 1),
         'updated_at' => current_time('mysql', 1)
     );
 
     // Define data formats
-    $data_formats = array('%d', '%s', '%s', '%s');
+    $data_formats = array('%d', '%s', '%s', '%s', '%s');
 
     // Insert data into the table
     $wpdb->insert($table_name, $data, $data_formats);
