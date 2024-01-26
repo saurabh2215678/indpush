@@ -66,7 +66,7 @@ function ProfileUpadate() {
     useEffect(()=>{
         var userDomainsarray = [''];
    
-        if(user.domains){
+        if(user?.domains){
             try{
                var userdomains = user.domains;
                 userDomainsarray = userdomains.split(',');

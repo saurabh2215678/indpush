@@ -1,10 +1,12 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useState } from 'react'
-import { useSelector } from 'react-redux';
+import { logout } from '../Redux/slices/user';
+import { useSelector, useDispatch } from "react-redux";
 import { Link } from 'react-router-dom'
 import {AnimatePresence, motion} from 'framer-motion';
 
 function Nav() {
+    const dispatch = useDispatch();
     const user = useSelector((state) => state.user.user);
     const [dropdown, setDropdown]= useState(false)
     // console.log(user)
@@ -27,7 +29,9 @@ function Nav() {
         setDropdown(false)
       }
 
-
+      const logOut=()=>{
+        dispatch(logout());
+       }
   return (
     <div>
          <header className="navbar sticky-top flex-md-nowrap">
@@ -96,7 +100,7 @@ function Nav() {
                          </a>
                      </li>
                      <li className="border-top mt-3 pt-2 mx-4">
-                         <a className="dropdown-item ms-0 me-0" href="#">
+                         <a className="dropdown-item ms-0 me-0" onClick={logOut} href="#">
                              <i className="bi-box-arrow-left me-2"></i>
                              Logout
                          </a>
