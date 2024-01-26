@@ -3,13 +3,14 @@ import React from 'react'
 import { logout } from '../Redux/slices/user';
 import { Link, NavLink } from 'react-router-dom'
 import { useSelector, useDispatch } from "react-redux";
+import { masterUser } from '../utils/common';
 
 function Leftpanel() {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.user);
-// console.log(user.id)
+console.log(user.id)
 
-// const (userId)
+
 
  const logOut=()=>{
   dispatch(logout());
@@ -38,26 +39,37 @@ function Leftpanel() {
               My Plan
             </a>
           </li>
-
+          
           
           <li className="nav-item">
           <NavLink to="/update-profile" className={({ isActive }) => isActive ? "active nav-link" : "nav-link"}>
           <i className="bi-person me-2"></i>Upload Profile
-          </NavLink>;
+          </NavLink>
           </li>
           <li className="nav-item">
           <NavLink to="/setting" className={({ isActive }) => isActive ? "active nav-link" : "nav-link"}>
           <i className="bi-gear me-2"></i>
           Settings
-          </NavLink>;
+          </NavLink>
           </li>
-
           <li className="nav-item">
-            <a className="nav-link" href="help-center.html">
-              <i className="bi-question-circle me-2"></i>
-              Download
-            </a>
+          <NavLink to="/download" className={({ isActive }) => isActive ? "active nav-link" : "nav-link"}>
+          <i className="bi-gear me-2"></i>
+          Download
+          </NavLink>
           </li>
+          {
+            user?.id == masterUser && 
+            <li className="nav-item">
+          <NavLink to="/master-admin" className={({ isActive }) => isActive ? "active nav-link" : "nav-link"}>
+          <i className="bi-question-circle me-2"></i>
+          Master Admin
+          </NavLink>
+          </li>
+          }
+          
+         
+          
 
           <li className="nav-item featured-box mt-lg-5 mt-4 mb-4">
             <img src="images/credit-card.png" className="img-fluid" alt="" />
