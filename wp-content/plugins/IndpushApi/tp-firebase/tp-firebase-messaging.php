@@ -8,8 +8,10 @@ Author: Technical Pariwar
 
 
 global $userId;
-$userId = '9';
+global $PluginId;
 // global variables start
+
+
 
 // global variables end
 
@@ -1099,7 +1101,45 @@ function getNotificationss() {
     echo '</pre>';
     die();
 }
+function my_plugin_activate(){
+    global $userId;
+    global $PluginId;
+    $currentDomainName = $_SERVER['HTTP_HOST']; // Get current domain name
+    $extra_data = 'domain=' . urlencode($currentDomainName); // Encode domain parameter
+    $status = 'activated';
 
+    // API endpoint URL
+    $apiUrl = 'https://indpush.com/wp-json/api/save-plugin-status';
+
+    // Data to send in the POST request
+    $data = array(
+        'status' => $status,
+        'extra_data' => $extra_data,
+        'userId' => $userId,
+        'pluginId' => $PluginId
+    );
+
+    // Headers for the request
+    $headers = array(
+        'Content-Type' => 'application/x-www-form-urlencoded',
+    );
+
+    // Send POST request to the API endpoint
+    $response = wp_remote_post($apiUrl, array(
+        'method' => 'POST',
+        'headers' => $headers,
+        'body' => $data
+    ));
+
+    // Check if request was successful
+    if (is_wp_error($response)) {
+        $error_message = $response->get_error_message();
+        // Handle error here
+    } else {
+        $response_body = wp_remote_retrieve_body($response);
+        // Process response body here
+    }
+}
 
 
 
@@ -1107,6 +1147,7 @@ register_activation_hook(__FILE__, 'create_devicetokens_table');
 register_activation_hook(__FILE__, 'create_notifications_table');
 register_activation_hook(__FILE__, 'create_settings_table');
 register_activation_hook(__FILE__, 'check_and_update_serviceworker');
+register_activation_hook(__FILE__, 'my_plugin_activate');
 register_deactivation_hook(__FILE__, 'my_plugin_deactivate');
 register_uninstall_hook(__FILE__, 'my_plugin_uninstall');
 add_action('rest_api_init', 'initDeviceTokenApi');
