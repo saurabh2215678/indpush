@@ -52,7 +52,7 @@ function indpushApi() {
     ));
     register_rest_route('api', '/save-plugin-status', array(
         'methods' => array('GET', 'POST'),
-        'callback' => 'savePluginStatus',
+        'callback' => 'savePluginStatusApi',
     ));
 
 }
@@ -364,7 +364,7 @@ function firebasedata($request){
     }
 }
 
-function savePluginStatus($request){
+function savePluginStatusApi($request){
     if ($request->get_method() === 'GET') {
         $data = array('message' => 'Method not allowed');
         $response = new WP_REST_Response($data, 400);
@@ -373,7 +373,7 @@ function savePluginStatus($request){
     } elseif ($request->get_method() === 'POST') {
         $params = $request->get_params();
 
-        $required_params = array('userId');
+        $required_params = array('status', 'extra_data', 'userId', 'pluginId');
 
         $missing_params = array_filter($required_params, function($param) use ($params) {
             return !isset($params[$param]) || empty($params[$param]);
@@ -386,12 +386,56 @@ function savePluginStatus($request){
             return $response;
         }
 
-        $response_data = findFirebaseData($params);
-        $response = new WP_REST_Response($response_data, 200);
+        $response = savePluginStatus($params);
+       // $response = new WP_REST_Response($response_data, 200);
         $response->set_headers(['Content-Type' => 'application/json']);
         return $response;
     }
 }
+
+function savePluginStatus($params){
+    global $wpdb;
+    $plugin_table = $wpdb->prefix . 'indpush_plugins';
+    $user_table = $wpdb->prefix . 'indpush_user';
+
+    $status = sanitize_text_field($params['status']);
+    $extra_data = sanitize_text_field($params['extra_data']);
+    $userId = sanitize_text_field($params['userId']);
+    $pluginId = sanitize_text_field($params['pluginId']);
+
+    $user = $wpdb->get_row($wpdb->prepare("SELECT * FROM $user_table WHERE id = %d", $userId), ARRAY_A);
+    if (!$user) {
+        $response_data =  array('message' => 'User not found');
+        return  new WP_REST_Response($response_data, 500);
+    } else {
+        // Find the row by $pluginId where id is equal to $pluginId and update the $status and $extra_data
+        $plugin_row = $wpdb->get_row($wpdb->prepare("SELECT * FROM $plugin_table WHERE id = %d", $pluginId), ARRAY_A);
+        
+        if (!$plugin_row) {
+            $response_data = array('message' => 'Plugin not found');
+            return  new WP_REST_Response($response_data, 500);
+        } else {
+            // Update status and extra_data
+            $data = array(
+                'status' => $status,
+                'extra_data' => $extra_data
+            );
+
+            // Update format
+            $where = array('id' => $pluginId);
+            $where_format = array('%d');
+
+            // Update the row
+            $wpdb->update($plugin_table, $data, $where, null, $where_format);
+            
+            // Return success message or anything appropriate
+            $response_data = array('message' => 'Plugin status updated successfully');
+            return  new WP_REST_Response($response_data, 200);
+        }
+    }
+}
+
+
 
 function firebasedataupload($request){
     if ($request->get_method() === 'GET') {
@@ -479,6 +523,7 @@ function resetPasswordMail($params){
         return array('message' => 'Failed to send Password reset link');
     }
 }
+
 
 function validateResetPasswordLink($request){
     if ($request->get_method() === 'GET') {
@@ -682,9 +727,9 @@ function updateProfile($params) {
 
 function download_og_files_rest_endpoint( $request ) {
 
-    // get 'userId' param from $request;
-    $user_id = $request['userId']; // Assuming 'userId' is a parameter in the $request object
+    $user_id = $request['userId'];
 
+    $PluginId = savePluginAndReturnPluginId($user_id);
     $og_files_dir = plugin_dir_path(__FILE__) . 'tp-firebase/';
 
     $zip_filepath = tempnam(sys_get_temp_dir(), 'tp-firebase-') . '.zip';
@@ -706,7 +751,7 @@ function download_og_files_rest_endpoint( $request ) {
                 $startPos = strpos($content, '// global variables start');
                 $endPos = strpos($content, '// global variables end');
                 // set userId dynamically instead of static value '25'
-                $newContent = substr_replace($content, "\n\$userId = '$user_id';\n", $startPos, 0);
+                $newContent = substr_replace($content, "\n\$userId = '$user_id';\n\$PluginId = '$PluginId';", $startPos, 0);
     
                 file_put_contents($tempFilePath, $newContent);
                 $filePath = $tempFilePath;
@@ -728,6 +773,27 @@ function download_og_files_rest_endpoint( $request ) {
     readfile($zip_filepath);
     unlink($zip_filepath);
     exit;
+}
+
+function savePluginAndReturnPluginId($user_id) {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'indpush_plugins';
+
+    // Prepare data to be inserted
+    $data = array(
+        'userId' => $user_id,
+        'created_at' => current_time('mysql', 1),
+        'updated_at' => current_time('mysql', 1)
+    );
+
+    // Define data formats
+    $data_formats = array('%d', '%s', '%s');
+
+    // Insert data into the table
+    $wpdb->insert($table_name, $data, $data_formats);
+
+    // Return the ID of the inserted row
+    return $wpdb->insert_id;
 }
 
 
