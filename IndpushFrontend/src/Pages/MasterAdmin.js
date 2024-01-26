@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { apiURI } from '../utils/common'
 function MasterAdmin() {
 
-    const fetchApi = async () => {
+    async function fetchApi() {
         const URL = apiURI+ '/get-plugin-list';
         const response = await fetch(URL,{
             method:'GET',
