@@ -54,6 +54,10 @@ function indpushApi() {
         'methods' => array('GET', 'POST'),
         'callback' => 'savePluginStatusApi',
     ));
+    register_rest_route('api', '/get-plugin-list', array(
+        'methods' => array('GET', 'POST'),
+        'callback' => 'getPluginList',
+    ));
 
 }
 function signupFunction($request){
@@ -185,6 +189,32 @@ function resendOtp($request){
             $response = new WP_REST_Response($response_data, 200);
         }
         
+        $response->set_headers(['Content-Type' => 'application/json']);
+        return $response;
+    }
+}
+function getPluginsData(){
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'indpush_plugins';
+    
+    // Retrieve all data from the table
+    $query = "SELECT * FROM $table_name";
+    $plugins_data = $wpdb->get_results($query, ARRAY_A);
+    
+    // Return the list of rows
+    return $plugins_data;
+}
+
+
+function getPluginList($request){
+    if ($request->get_method() === 'GET') {
+        $data = getPluginsData();
+        $response = new WP_REST_Response($data, 200);
+        $response->set_headers(['Content-Type' => 'application/json']);
+        return $response;
+    } elseif ($request->get_method() === 'POST') {
+        $data = array('message' => 'Method not allowed');
+        $response = new WP_REST_Response($data, 400);
         $response->set_headers(['Content-Type' => 'application/json']);
         return $response;
     }
