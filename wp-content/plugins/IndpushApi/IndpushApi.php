@@ -778,16 +778,23 @@ function download_og_files_rest_endpoint( $request ) {
 function savePluginAndReturnPluginId($user_id) {
     global $wpdb;
     $table_name = $wpdb->prefix . 'indpush_plugins';
+    $user_table = $wpdb->prefix . 'indpush_user';
 
+    $user_data = $wpdb->get_row($wpdb->prepare("SELECT * FROM $user_table WHERE id = %d", $user_id));
+    $subscription_id = $user_data->subscription_id;
     // Prepare data to be inserted
+
+
+
     $data = array(
         'userId' => $user_id,
+        'subscription_id' => $subscription_id,
         'created_at' => current_time('mysql', 1),
         'updated_at' => current_time('mysql', 1)
     );
 
     // Define data formats
-    $data_formats = array('%d', '%s', '%s');
+    $data_formats = array('%d', '%s', '%s', '%s');
 
     // Insert data into the table
     $wpdb->insert($table_name, $data, $data_formats);
