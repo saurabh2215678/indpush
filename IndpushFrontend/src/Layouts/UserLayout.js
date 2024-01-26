@@ -7,7 +7,18 @@ import { useSelector } from 'react-redux';
 function UserLayout() {
   const navigate = useNavigate();
   const user = useSelector((state) => state.user.user);
+  let headerHeight = 0;
 
+  function setHeaderHeight() {
+    const headerElement = document.querySelector('header');
+    if (headerElement && headerHeight !== headerElement.offsetHeight) {
+      headerHeight = headerElement.offsetHeight;
+      document.documentElement.style.setProperty('--header-height', `${headerHeight}px`);
+    }
+    requestAnimationFrame(setHeaderHeight);
+  }
+  requestAnimationFrame(setHeaderHeight);
+  
   useEffect(() => {
     if (!user) {
       navigate('/login');

@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux';
 import { apiURI } from '../utils/common';
+import { toast } from 'react-toastify';
 
 function Setting() {
     const user = useSelector((state) => state.user.user);
     const [formData, setFormData] = useState({});
-    console.log(user)
+    // console.log(user)
 
    async function hitApi(){
        const URL = apiURI+ '/firebase-data';
@@ -18,6 +19,7 @@ function Setting() {
             }
        });
        const data = await responce.json();
+    //    console.log('jjj', data)
        if(data.data){
         setFormData(data.data);
        }
@@ -28,8 +30,9 @@ function Setting() {
         const URL = apiURI+ '/firebase-data-upload';
         const finalData = {...formData, userId: user.id}
         // const userID = user.id;
-        console.log(finalData);
+        console.log(formData);
 
+       
         const responce = await fetch(URL, {
             method:'post',
             body:new URLSearchParams(finalData),
@@ -37,8 +40,9 @@ function Setting() {
                 "Content-Type": "application/x-www-form-urlencoded",
                 }
            });
+           
         const data = await responce.json();
-        console.log(data)
+        toast.success(data.message)
     }
     function handleChange(e){
         const name = e.target.name;
@@ -51,7 +55,7 @@ function Setting() {
     },[])
 
   return (
-    <div>
+    <>
         <div className='middle_login'>
             <div className='middle_login_inner'>
                 <div className='custom-block bg-white'>
@@ -64,7 +68,7 @@ function Setting() {
                 </div>
             </div>
         </div>
-    </div>
+    </>
   )
 }
 

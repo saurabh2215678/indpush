@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { apiURI } from '../utils/common'
 import { toast } from 'react-toastify';
 
@@ -36,25 +36,37 @@ function handleChange(e){
     const name = e.target.name;
     const value = e.target.value;
     setFormData({...formData, [name]: value});
+
 }
+
+function populateEmail(){
+    var url = window.location.href;
+    var urlParams = new URLSearchParams(url.split('?')[1]); // Split the URL to get the query string
+    var emailParam = urlParams.get('email');
+    setFormData({...formData, email: emailParam});
+    // console.log(emailParam)
+}
+ useEffect(()=>{
+    populateEmail()
+ },[])
 
     // hitApin();
 
   return (
-    <div>
+    <>
         <div className='middle_login'>
             <div className='middle_login_inner'>
                 <div className='custom-block bg-white'>
                         <h3 className="mb-3"><a href="/">LOGO</a></h3>
                         <form className="custom-form profile-form" onSubmit={hitApin}>
-             <input className="form-control"  type="text" name="email" onChange={handleChange}  placeholder="Email Id" />
+             <input className="form-control" value={formData.email}  type="text" name="email" onChange={handleChange}  placeholder="Email Id" />
              <button type="submit" className="form-control ms-2" >Submit</button> 
             </form>
                
                 </div>
             </div>
         </div>
-    </div>
+    </>
   )
 }
 
