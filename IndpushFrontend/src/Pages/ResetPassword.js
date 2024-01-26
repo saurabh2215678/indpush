@@ -35,7 +35,7 @@ function ResetPassword() {
         const URL = apiURI+ '/validate-reset-password-link';
         const passwordlink = "https://indpush.com" + window.location.pathname;
         const useremail= localStorage.getItem('user-email')
-        // console.log(passwordlink)
+        console.log(passwordlink)
         const responce = await fetch(URL, {
             method:'post',
             body:new URLSearchParams({'password-link':passwordlink, email:useremail}),
@@ -45,9 +45,9 @@ function ResetPassword() {
         });
         const data = await responce.json();
         // console.log(data);
-        if(responce.status != 200){
-            navigate('/forgot-password')
-        }
+        // if(responce.status != 200){
+        //     navigate('/forgot-password')
+        // }
         // console.log(responce)
     }
 
@@ -56,7 +56,7 @@ function ResetPassword() {
         const passwordlink = "https://indpush.com/" + window.location.pathname;
         const useremail= localStorage.getItem('user-email');
         const password = formData.password;
-
+        console.log(passwordlink)
         const responce = await fetch(URL, {
             method: 'post',
             body:new URLSearchParams({'password-link':passwordlink, email:useremail, password:password}),
