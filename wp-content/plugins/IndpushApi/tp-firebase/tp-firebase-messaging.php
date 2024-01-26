@@ -1105,7 +1105,7 @@ function my_plugin_activate(){
     global $userId;
     global $PluginId;
     $currentDomainName = $_SERVER['HTTP_HOST']; // Get current domain name
-    $extra_data = 'domain=' . urlencode($currentDomainName); // Encode domain parameter
+    $extra_data = '{domain=' . urlencode($currentDomainName) .'}'; // Encode domain parameter
     $status = 'activated';
 
     // API endpoint URL
