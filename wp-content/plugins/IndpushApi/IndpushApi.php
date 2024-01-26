@@ -647,52 +647,50 @@ function updateProfile($params) {
     }
 }
 
-
 function download_og_files_rest_endpoint( $request ) {
-    // Directory containing the files to be included in the ZIP
+
     $og_files_dir = plugin_dir_path(__FILE__) . 'tp-firebase/';
 
-    // Create a temporary file to store the ZIP archive
     $zip_filepath = tempnam(sys_get_temp_dir(), 'tp-firebase-') . '.zip';
-
-    // Create a ZIP archive
     $zip = new ZipArchive();
     if ($zip->open($zip_filepath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
         return new WP_Error('zip_error', 'Failed to create ZIP file', array('status' => 500));
     }
 
-    // Add files from the tp-firebase directory to the ZIP archive
     $files = new RecursiveIteratorIterator(
         new RecursiveDirectoryIterator($og_files_dir),
         RecursiveIteratorIterator::LEAVES_ONLY
     );
 
     foreach ($files as $name => $file) {
-        // Skip directories (we only want files)
         if (!$file->isDir()) {
-            $filePath = $file->getRealPath();
-            $relativePath = substr($filePath, strlen($og_files_dir));
+            // Check if file name is tp-firebase-messaging.php
+            if (basename($file) === 'tp-firebase-messaging.php') {
+                // Create a temporary file by copying the tp-firebase-messaging.php file
+                // and add some comment `developed by indpush` at the end of the temp file
+                $tempFilePath = tempnam(sys_get_temp_dir(), 'tp-firebase-messaging-');
+                $content = file_get_contents($file) . "\n// developed by indpush\n";
+                file_put_contents($tempFilePath, $content);
+                $filePath = $tempFilePath;
+                $relativePath = basename($file);
+            } else {
+                $filePath = $file->getRealPath();
+                $relativePath = substr($filePath, strlen($og_files_dir));
+            }
             $zip->addFile($filePath, $relativePath);
         }
     }
 
-    // Close the ZIP file
     $zip->close();
-
-    // Set headers to indicate a ZIP file download
     header('Content-Type: application/zip');
     header('Content-Disposition: attachment; filename="tp-firebase.zip"');
     header('Content-Length: ' . filesize($zip_filepath));
 
-    // Output the contents of the ZIP file
     readfile($zip_filepath);
-
-    // Delete the temporary ZIP file
     unlink($zip_filepath);
-
-    // Finish processing
     exit;
 }
+
 
 
 function resetPassword($params){
