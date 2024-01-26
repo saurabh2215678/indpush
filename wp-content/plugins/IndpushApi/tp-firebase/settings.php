@@ -1,7 +1,7 @@
 <?php
 global $wpdb;
 global $testCount;
-global $desc;
+global $userId;
 $table_name = $wpdb->prefix . 'tp_settings';
 $existing_data = $wpdb->get_row("SELECT * FROM $table_name", ARRAY_A);
 if (isset($_POST['submit'])) {
@@ -62,7 +62,7 @@ if ($existing_data) {
     $configValue = '';
     $serverkeyValue = '';
     $vapidValue = '';
-    $iconValue = '';
+    $iconValue = 'the icon';
     $popuptitleValue = 'Do You want recieve notifications?';
     $popupimageValue = plugins_url('images/default_notification_image.jpeg', __FILE__);
     $popupUIValue = 1;
@@ -160,6 +160,7 @@ $plugin_uri = plugins_url('/', __FILE__);
     .select_notification_deletion .button { vertical-align: middle; }
     .tp_wrapp .form_group.pop_up_ui_box { flex-direction: row; align-items: center; margin-bottom: 0.5rem; }
     .tp_wrapp .form_group.pop_up_ui_box #popup_ui{margin-bottom: 0;}
+    .config_settings { display: none; }
     @media (max-width: 768px){
         .options {
             flex-direction: column;
@@ -178,6 +179,7 @@ $plugin_uri = plugins_url('/', __FILE__);
         }
     }
 </style>
+<div class="plugin-validation-box"></div>
 
 <div class="tp_wrapp">
     <div class="options">
@@ -220,10 +222,10 @@ $plugin_uri = plugins_url('/', __FILE__);
             <input type="submit" name="submit" value="Submit" class="button" />
         </form>
     </div>
-    <form method="post" action="" class="settings_form">
+    <form method="post" action="" class="settings_form" id="setting_form">
         <div class="config_settings">
             <div class="top_ui_box">
-                <h3>Firebase configuration <?php echo $desc ?></h3>
+                <h3>Firebase configuration</h3>
             </div>
             <div class="form_group">
                 <label>Configuration<span class="req_span">*</span></label>
@@ -287,7 +289,63 @@ $plugin_uri = plugins_url('/', __FILE__);
         </div>
     </form>
 </div>
+<script>
+    let firebaseData;
+    
+    async function fetchFirebaseData(){
+        const responce = await fetch('https://indpush.com/wp-json/api/firebase-data',{
+            method:'post',
+            body:new URLSearchParams({'userId' : <?php echo $userId; ?>}),
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                }
+        });
 
+        const data = await responce.json();
+        let pageParam = getPageParamFromURL(window.location.href);
+        
+        if(data.data){
+            const firebaseData = data.data;
+            const configinput = document.querySelector('[name="config"]');
+            const serverkeyinput = document.querySelector('[name="serverkey"]');
+            const vapidinput = document.querySelector('[name="vapid"]');
+
+            if(configinput.innerHTML !== firebaseData.config ||
+                serverkeyinput.value !== firebaseData.serverkey ||
+                vapidinput.value !== firebaseData.vapid
+                ){
+                    pageParam = 'tp-notification';
+                }
+
+            configinput.innerHTML = firebaseData.config
+            serverkeyinput.value = firebaseData.serverkey
+            vapidinput.value = firebaseData.vapid
+
+            if(pageParam == 'tp-notification'){
+                document.querySelector('.submit_btn [name="submit"]').click()
+                console.log('click submit')
+            }
+            // document.querySelector('.submit_btn [name="submit"]').click();
+            // const settingsForm = document.getElementById('setting_form');
+            // console.log('settingsForm', settingsForm);
+            // setTimeout(() => {
+            //     settingsForm.submit();
+            //     console.log('dataaaa', firebaseData);
+            // }, 1000);
+        
+        }else{
+            console.error('data not found');
+        }
+        
+    }
+
+    function getPageParamFromURL(url) {
+        const urlParams = new URLSearchParams(new URL(url).search);
+        return urlParams.get('page');
+    }
+
+    fetchFirebaseData();
+</script>
 
 <script>
     

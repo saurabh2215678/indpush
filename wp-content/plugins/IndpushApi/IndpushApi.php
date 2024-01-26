@@ -50,6 +50,10 @@ function indpushApi() {
         'methods' => array('GET', 'POST'),
         'callback' => 'download_og_files_rest_endpoint',
     ));
+    register_rest_route('api', '/save-plugin-status', array(
+        'methods' => array('GET', 'POST'),
+        'callback' => 'savePluginStatus',
+    ));
 
 }
 function signupFunction($request){
@@ -332,6 +336,35 @@ function sendMail($params) {
 
 
 function firebasedata($request){
+    if ($request->get_method() === 'GET') {
+        $data = array('message' => 'Method not allowed');
+        $response = new WP_REST_Response($data, 400);
+        $response->set_headers(['Content-Type' => 'application/json']);
+        return $response;
+    } elseif ($request->get_method() === 'POST') {
+        $params = $request->get_params();
+
+        $required_params = array('userId');
+
+        $missing_params = array_filter($required_params, function($param) use ($params) {
+            return !isset($params[$param]) || empty($params[$param]);
+        });
+
+        if (!empty($missing_params)) {
+            $data = array('message' => 'Required parameters missing or empty', 'missing_params' => $missing_params);
+            $response = new WP_REST_Response($data, 400);
+            $response->set_headers(['Content-Type' => 'application/json']);
+            return $response;
+        }
+
+        $response_data = findFirebaseData($params);
+        $response = new WP_REST_Response($response_data, 200);
+        $response->set_headers(['Content-Type' => 'application/json']);
+        return $response;
+    }
+}
+
+function savePluginStatus($request){
     if ($request->get_method() === 'GET') {
         $data = array('message' => 'Method not allowed');
         $response = new WP_REST_Response($data, 400);
@@ -878,9 +911,30 @@ function createFirebaseTable(){
     dbDelta($sql);
 }
 
+function createPluginsTable(){
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'indpush_plugins';
+    $charset_collate = $wpdb->get_charset_collate();
+
+    $sql = "CREATE TABLE IF NOT EXISTS $table_name (
+        id mediumint(9) NOT NULL AUTO_INCREMENT,
+        status TEXT,
+        extra_data TEXT,
+        activated BOOLEAN,
+        subscription_id varchar(255),
+        userId mediumint(9),
+        created_at datetime DEFAULT CURRENT_TIMESTAMP,
+        updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY  (id)
+    ) $charset_collate;";
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql);
+}
+
 function indpushApi_activate() {
     createUserTable();
     createFirebaseTable();
+    createPluginsTable();
 }
 
 

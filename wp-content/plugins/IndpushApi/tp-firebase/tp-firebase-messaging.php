@@ -6,6 +6,9 @@ Version: 1.0
 Author: Technical Pariwar
 */
 
+
+global $userId;
+$userId = '9';
 // global variables start
 
 // global variables end
