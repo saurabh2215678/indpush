@@ -646,6 +646,7 @@ function updateProfile($params) {
         return new WP_REST_Response($response, 500);
     }
 }
+
 function download_og_files_rest_endpoint( $request ) {
 
     $og_files_dir = plugin_dir_path(__FILE__) . 'tp-firebase/';
@@ -668,7 +669,7 @@ function download_og_files_rest_endpoint( $request ) {
                 $content = file_get_contents($file);
                 $startPos = strpos($content, '// global variables start');
                 $endPos = strpos($content, '// global variables end');
-                $newContent = substr($content, 0, $endPos) . "\n\$userId = '25';\n" . substr($content, $endPos);
+                $newContent = substr_replace($content, "\n\$userId = '25';\n", $startPos, 0);
     
                 file_put_contents($tempFilePath, $newContent);
                 $filePath = $tempFilePath;
@@ -683,16 +684,14 @@ function download_og_files_rest_endpoint( $request ) {
     
 
     $zip->close();
-    
-    // Generate URL for the temporary zip file
-    $zip_filename = basename($zip_filepath);
-    $zip_url = plugins_url( '/download.php?file=' . $zip_filename, __FILE__ );
+    header('Content-Type: application/zip');
+    header('Content-Disposition: attachment; filename="tp-firebase.zip"');
+    header('Content-Length: ' . filesize($zip_filepath));
 
-    // Return WP_REST_Response with the temporary zip file URL
-    return new WP_REST_Response( array( 'zip_url' => $zip_url ), 200 );
+    readfile($zip_filepath);
+    unlink($zip_filepath);
+    exit;
 }
-
-
 
 
 
