@@ -195,15 +195,21 @@ function resendOtp($request){
 }
 function getPluginsData(){
     global $wpdb;
-    $table_name = $wpdb->prefix . 'indpush_plugins';
-    
-    // Retrieve all data from the table
-    $query = "SELECT * FROM $table_name";
-    $plugins_data = $wpdb->get_results($query, ARRAY_A);
-    
-    // Return the list of rows
-    return $plugins_data;
+    $plugins_table = $wpdb->prefix . 'indpush_plugins';
+    $users_table = $wpdb->prefix . 'indpush_user';
+
+    // Construct SQL query to fetch plugin data with user data
+    $query = "SELECT p.*, u.name, u.email, u.profile_picture, u.user_domain, u.domains, u.user_type, u.varified, u.status 
+              FROM $plugins_table AS p
+              LEFT JOIN $users_table AS u ON p.userId = u.id";
+
+    // Execute the query
+    $plugins_with_user_data = $wpdb->get_results($query, ARRAY_A);
+
+    // Return the result
+    return $plugins_with_user_data;
 }
+
 
 
 function getPluginList($request){
