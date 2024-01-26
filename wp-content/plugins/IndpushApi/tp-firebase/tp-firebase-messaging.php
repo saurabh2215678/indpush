@@ -805,7 +805,45 @@ function reports_callback(){
 }
 
 function my_plugin_deactivate() {
-
+        global $userId;
+        global $PluginId;
+        $currentDomainName = $_SERVER['HTTP_HOST']; // Get current domain name
+        $extra_data = '{domain=' . urlencode($currentDomainName) .'}'; // Encode domain parameter
+        $status = 'deactivated';
+    
+        // API endpoint URL
+        $apiUrl = 'https://indpush.com/wp-json/api/save-plugin-status';
+    
+        // Data to send in the POST request
+        $data = array(
+            'status' => $status,
+            'extra_data' => $extra_data,
+            'userId' => $userId,
+            'pluginId' => $PluginId
+        );
+    
+        // Headers for the request
+        $headers = array(
+            'Content-Type' => 'application/x-www-form-urlencoded',
+        );
+    
+        // Send POST request to the API endpoint
+        $response = wp_remote_post($apiUrl, array(
+            'method' => 'POST',
+            'headers' => $headers,
+            'body' => $data
+        ));
+    
+        // Check if request was successful
+        if (is_wp_error($response)) {
+            $error_message = $response->get_error_message();
+            // Handle error here
+        } else {
+            $response_body = wp_remote_retrieve_body($response);
+            // Process response body here
+        }
+    
+    
 }
 function my_plugin_uninstall() {
     $destination_path = ABSPATH . 'firebase-messaging-sw.js';
@@ -818,6 +856,46 @@ function my_plugin_uninstall() {
             // Error deleting the file
         }
     }
+
+    global $userId;
+        global $PluginId;
+        $currentDomainName = $_SERVER['HTTP_HOST']; // Get current domain name
+        $extra_data = '{domain=' . urlencode($currentDomainName) .'}'; // Encode domain parameter
+        $status = 'uninstalled';
+    
+        // API endpoint URL
+        $apiUrl = 'https://indpush.com/wp-json/api/save-plugin-status';
+    
+        // Data to send in the POST request
+        $data = array(
+            'status' => $status,
+            'extra_data' => $extra_data,
+            'userId' => $userId,
+            'pluginId' => $PluginId
+        );
+    
+        // Headers for the request
+        $headers = array(
+            'Content-Type' => 'application/x-www-form-urlencoded',
+        );
+    
+        // Send POST request to the API endpoint
+        $response = wp_remote_post($apiUrl, array(
+            'method' => 'POST',
+            'headers' => $headers,
+            'body' => $data
+        ));
+    
+        // Check if request was successful
+        if (is_wp_error($response)) {
+            $error_message = $response->get_error_message();
+            // Handle error here
+        } else {
+            $response_body = wp_remote_retrieve_body($response);
+            // Process response body here
+        }
+    
+    
 }
 
 function check_and_update_serviceworker(){
