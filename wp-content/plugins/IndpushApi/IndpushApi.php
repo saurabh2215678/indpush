@@ -649,53 +649,50 @@ function updateProfile($params) {
 
 
 function download_og_files_rest_endpoint( $request ) {
-    // Define the path to the folder you want to zip
-    $folder_path = plugin_dir_path( __FILE__ ) . 'ogFiles/';
+    // Directory containing the files to be included in the ZIP
+    $og_files_dir = plugin_dir_path(__FILE__) . 'og-files/';
 
-    // Initialize a new ZipArchive object
+    // Create a temporary file to store the ZIP archive
+    $zip_filepath = tempnam(sys_get_temp_dir(), 'og-files-') . '.zip';
+
+    // Create a ZIP archive
     $zip = new ZipArchive();
-    
-    // Define the name of the zip file
-    $zip_file = plugin_dir_path( __FILE__ ) . 'ogFiles.zip';
+    if ($zip->open($zip_filepath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+        return new WP_Error('zip_error', 'Failed to create ZIP file', array('status' => 500));
+    }
 
-    // Open or create the zip file
-    if ( $zip->open( $zip_file, ZipArchive::CREATE | ZipArchive::OVERWRITE ) === TRUE ) {
-        // Add files to the zip file
-        $files = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator( $folder_path ),
-            RecursiveIteratorIterator::LEAVES_ONLY
-        );
+    // Add files from the og-files directory to the ZIP archive
+    $files = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($og_files_dir),
+        RecursiveIteratorIterator::LEAVES_ONLY
+    );
 
-        foreach ( $files as $name => $file ) {
-            // Skip directories (we only want to add files)
-            if ( !$file->isDir() ) {
-                $filePath = $file->getRealPath();
-                $relativePath = substr( $filePath, strlen( $folder_path ) );
-                $zip->addFile( $filePath, $relativePath );
-            }
-        }
-
-        // Close the zip file
-        $zip->close();
-
-        // Send the zip file as response
-        if ( file_exists( $zip_file ) ) {
-            $response = new WP_REST_Response( file_get_contents( $zip_file ) );
-            $response->set_status( 200 );
-            $response->header( 'Content-Type', 'application/zip' );
-            $response->header( 'Content-Disposition', 'attachment; filename="' . basename( $zip_file ) . '"' );
-
-            // Delete the temporary zip file
-            unlink( $zip_file );
-
-            return $response;
-        } else {
-            // Error handling if the zip file could not be created
-            return new WP_REST_Response( 'Error: Could not create the zip file.', 500 );
+    foreach ($files as $name => $file) {
+        // Skip directories (we only want files)
+        if (!$file->isDir()) {
+            $filePath = $file->getRealPath();
+            $relativePath = substr($filePath, strlen($og_files_dir));
+            $zip->addFile($filePath, $relativePath);
         }
     }
-}
 
+    // Close the ZIP file
+    $zip->close();
+
+    // Set headers to indicate a ZIP file download
+    header('Content-Type: application/zip');
+    header('Content-Disposition: attachment; filename="og-files.zip"');
+    header('Content-Length: ' . filesize($zip_filepath));
+
+    // Output the contents of the ZIP file
+    readfile($zip_filepath);
+
+    // Delete the temporary ZIP file
+    unlink($zip_filepath);
+
+    // Finish processing
+    exit;
+}
 
 
 function resetPassword($params){

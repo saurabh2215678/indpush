@@ -1,0 +1,16 @@
+@media (max-width:992px) {
+    .notification_wrapper { flex-direction: column; padding-right: 1em!important; } 
+    .notification_list { width: 100%!important; } 
+    .notification_sender { width: 100%!important; } 
+    .notification_sender form { margin: 0!important; } 
+    .notification_list .post_list { padding-bottom: 0!important; }
+
+    .total_boxes { flex-wrap: wrap!important; justify-content: space-between!important; } 
+    .totla_box { min-width: auto!important; width: calc(50% - 0.5em)!important; margin: 0!important; margin-bottom: 1em!important; } 
+    .main_wrapper { padding-right: 1em!important; } 
+    .export_import_box>* { min-height: 5em!important; }
+    .settings_form { padding-left: 0!important; padding-right: 1em!important; flex-direction: column!important; }
+    .settings_form>* { width: 100%!important; } 
+    .settings_form .config_settings { margin-bottom: 1em!important; }
+}
+.click_actions_list:has(.action_group:nth-child(2))~button { display: none; }
