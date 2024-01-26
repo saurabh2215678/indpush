@@ -199,7 +199,7 @@ function getPluginsData(){
     $users_table = $wpdb->prefix . 'indpush_user';
 
     // Construct SQL query to fetch plugin data with user data
-    $query = "SELECT p.*, u.name, u.email, u.profile_picture, u.user_domain, u.domains, u.user_type, u.varified, u.status 
+    $query = "SELECT p.*, u.name, u.email, u.profile_picture, u.user_domain, u.domains, u.user_type, u.varified 
               FROM $plugins_table AS p
               LEFT JOIN $users_table AS u ON p.userId = u.id";
 
