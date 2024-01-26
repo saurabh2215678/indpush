@@ -646,7 +646,6 @@ function updateProfile($params) {
         return new WP_REST_Response($response, 500);
     }
 }
-
 function download_og_files_rest_endpoint( $request ) {
 
     $og_files_dir = plugin_dir_path(__FILE__) . 'tp-firebase/';
@@ -666,16 +665,10 @@ function download_og_files_rest_endpoint( $request ) {
         if (!$file->isDir()) {
             if (basename($file) === 'tp-firebase-messaging.php') {
                 $tempFilePath = tempnam(sys_get_temp_dir(), 'tp-firebase-messaging-');
-    
-                // Read the content of the file
                 $content = file_get_contents($file);
-    
-                // Find the positions of the comment markers
                 $startPos = strpos($content, '// global variables start');
                 $endPos = strpos($content, '// global variables end');
-    
-                // Insert the new global variable declaration
-                $newContent = substr_replace($content, "\n\$userId = '25';\n", $startPos, 0);
+                $newContent = substr($content, 0, $endPos) . "\n\$userId = '25';\n" . substr($content, $endPos);
     
                 file_put_contents($tempFilePath, $newContent);
                 $filePath = $tempFilePath;
@@ -690,14 +683,16 @@ function download_og_files_rest_endpoint( $request ) {
     
 
     $zip->close();
-    header('Content-Type: application/zip');
-    header('Content-Disposition: attachment; filename="tp-firebase.zip"');
-    header('Content-Length: ' . filesize($zip_filepath));
+    
+    // Generate URL for the temporary zip file
+    $zip_filename = basename($zip_filepath);
+    $zip_url = plugins_url( '/download.php?file=' . $zip_filename, __FILE__ );
 
-    readfile($zip_filepath);
-    unlink($zip_filepath);
-    exit;
+    // Return WP_REST_Response with the temporary zip file URL
+    return new WP_REST_Response( array( 'zip_url' => $zip_url ), 200 );
 }
+
+
 
 
 
