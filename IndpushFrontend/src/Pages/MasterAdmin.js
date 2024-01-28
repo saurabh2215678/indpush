@@ -13,7 +13,7 @@ function MasterAdmin() {
                 }
         });
         const data = await response.json();
-
+        console.log(data);
         setPlugins(data);
     }
 

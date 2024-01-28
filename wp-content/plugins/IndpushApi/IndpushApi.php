@@ -193,23 +193,45 @@ function resendOtp($request){
         return $response;
     }
 }
+
+
 function getPluginsData(){
     global $wpdb;
     $plugins_table = $wpdb->prefix . 'indpush_plugins';
     $users_table = $wpdb->prefix . 'indpush_user';
 
-    // Construct SQL query to fetch plugin data with user data
     $query = "SELECT p.*, u.name, u.email, u.profile_picture, u.user_domain, u.domains, u.user_type, u.varified 
               FROM $plugins_table AS p
               LEFT JOIN $users_table AS u ON p.userId = u.id";
 
-    // Execute the query
     $plugins_with_user_data = $wpdb->get_results($query, ARRAY_A);
 
-    // Return the result
+    // Calculate time difference from now for each plugin's updated_at time
+    foreach ($plugins_with_user_data as &$plugin_data) {
+        $updated_at = strtotime($plugin_data['updated_at']);
+        $current_time = strtotime(current_time('mysql', true)); // Get current time in UTC
+
+        $time_diff = $current_time - $updated_at;
+
+        if ($time_diff < 60) {
+            $from_now = 'just now';
+        } elseif ($time_diff < 3600) {
+            $minutes = floor($time_diff / 60);
+            $from_now = $minutes == 1 ? '1 min ago' : "$minutes mins ago";
+        } elseif ($time_diff < 86400) {
+            $hours = floor($time_diff / 3600);
+            $from_now = $hours == 1 ? '1 hour ago' : "$hours hours ago";
+        } else {
+            $days = floor($time_diff / 86400);
+            $from_now = $days == 1 ? '1 day ago' : "$days days ago";
+        }
+
+        // Add 'from_now' parameter to the plugin data
+        $plugin_data['from_now'] = $from_now;
+    }
+    
     return $plugins_with_user_data;
 }
-
 
 
 function getPluginList($request){

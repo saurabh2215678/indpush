@@ -53,7 +53,7 @@ return (
             
                <input className="form-control" onChange={handleFormData}  type="password" name="password" placeholder="Password" />
                {formData?.email ? 
-                  <Link className='mt-1 mb-4 forgot_pass' to={`/forgot-password?email=${formData.email}`}>Forgot password? 1</Link>:
+                  <Link className='mt-1 mb-4 forgot_pass' to={`/forgot-password?email=${formData.email}`}>Forgot password?</Link>:
                   <Link  className='mt-1 mb-4 forgot_pass' to={`/forgot-password`}>Forgot password?</Link>
                }
 
