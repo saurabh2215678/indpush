@@ -11,7 +11,7 @@ export const handleValidateIputs = (form, errorArray) => {
 export const getExtraData = (dataName, data) => {
     if(data){
         // const jsondata = JSON.parse(data);
-        console.log('dataaaa>>', JSON.parse(data));
+        console.log('dataaaa>>', data);
         return 'jsondata[dataName]';
     }else{
         return '';
