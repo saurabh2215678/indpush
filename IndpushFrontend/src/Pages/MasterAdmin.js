@@ -38,7 +38,7 @@ function MasterAdmin() {
                             <tr>
                                 <th>Name</th>
                                 <th>Email</th>
-                                {/* <th>Domain</th> */}
+                                <th>Domain</th>
                                 <th>Status</th>
                                 <th>Time</th>
                             </tr>
@@ -49,7 +49,7 @@ function MasterAdmin() {
                                 <tr key={index}>
                                     <td>{item.name}</td>
                                     <td>{item.email}</td>
-                                    {/* <td>{getExtraData('domain', item.extra_data)}</td> */}
+                                    <td>{getExtraData('domain', item.extra_data)}</td>
                                     <td>
                                         <span className="badge text-bg-success">
                                             {item.status}
