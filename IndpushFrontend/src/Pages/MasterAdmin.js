@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { apiURI } from '../utils/common'
+import { apiURI, getExtraData } from '../utils/common'
 function MasterAdmin() {
 
     const [plugins, setPlugins] = useState([]);
@@ -38,8 +38,9 @@ function MasterAdmin() {
                             <tr>
                                 <th>Name</th>
                                 <th>Email</th>
-                                <th>Domain</th>
+                                {/* <th>Domain</th> */}
                                 <th>Status</th>
+                                <th>Time</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -48,33 +49,18 @@ function MasterAdmin() {
                                 <tr key={index}>
                                     <td>{item.name}</td>
                                     <td>{item.email}</td>
-                                    <td>{item.user_domain}</td>
+                                    {/* <td>{getExtraData('domain', item.extra_data)}</td> */}
                                     <td>
                                         <span className="badge text-bg-success">
                                             {item.status}
                                         </span>
                                     </td>
-
+                                    <td>{item.from_now}</td>
                                 </tr>
                                 )
                             }
 
-                            {/* <tr>
-                                <td>July 2, 2023</td>
-                                <td>10:42 AM</td>
-                                <td>Food Delivery</td>
-                                <td>Mobile Reload</td>
-                                <td className="text-success">
-                                    <span className="me-1">+</span>
-                                    $250
-                                </td>
-                                <td>$5,600.00</td>
-                                <td>
-                                    <span className="badge text-bg-success">
-                                        Success
-                                    </span>
-                                </td>
-                            </tr> */}
+                            
                             
                         </tbody>
                         </table>

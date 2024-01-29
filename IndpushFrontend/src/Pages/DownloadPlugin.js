@@ -12,7 +12,7 @@ function DownloadPlugin() {
 
        async function hitApi(){
        const URL = apiURI+ '/firebase-data';
-       const userID = user.id;
+       const userID = user?.id;
        const responce = await fetch(URL, {
         method:'post',
         body:new URLSearchParams({userId:userID}),

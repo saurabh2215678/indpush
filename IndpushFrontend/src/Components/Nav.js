@@ -9,20 +9,20 @@ function Nav() {
     const dispatch = useDispatch();
     const user = useSelector((state) => state.user.user);
     const [dropdown, setDropdown]= useState(false)
-    // console.log(user)
+
     function handleClick(){
         setDropdown(!dropdown);
-        
     }
+
     function addClickHandler(className) {
         document.addEventListener('click', (event) => {
           const isClickInside = event.target.closest(`.${className}`);
           if(!isClickInside){
             handleDropdownClose()
           }
-          console.log(isClickInside ? 'Clicked inside' : 'Clicked Outside');
         });
       }
+      
       document.addEventListener('click', ()=>{addClickHandler('navbar-nav')} )
   
       function handleDropdownClose(){
