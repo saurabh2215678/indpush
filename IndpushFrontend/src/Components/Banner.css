@@ -1,0 +1,120 @@
+.text-red {
+    color: red;
+}
+.hero-title {
+    font-size: 1.875rem;
+    font-weight: 500;
+    span{
+        font-weight: 700;
+    }
+}
+.left-box {
+    padding: 3.125rem 0px;
+    text-align: -webkit-center;
+}
+.w_350{width: 350px;}
+.iphone {width: 350px;}
+
+.truesignal {
+    -webkit-animation: float_img 24s ease infinite;
+    animation: float_img 24s ease infinite;
+    width: 350px;
+    top: -25px;
+    left: 130px;
+}
+.notification {
+    position: relative;
+    width: 350px;
+    height: 111.37px;
+    background: #FFFFFF;
+    border: 0.179505px solid #949494;
+    box-sizing: border-box;
+    box-shadow: 0px 1.43604px 0.71802px rgba(0, 0, 0, 0.25);
+    border-radius: 15.0784px;
+    pointer-events: none;
+}
+.notification .icon-cover {
+    top: 16.11px;
+    left: 14.22px;
+}
+.notification>* {
+    position: absolute;
+}
+.notification .icon {
+    width: 23.46px;
+    height: 23.46px;
+}
+.notification .app-name-cover {
+    top: 24px;
+    left: 46.85px;
+}
+
+.notification .app-name {
+    font-weight: bold;
+    font-size: 15px;
+    line-height: 15px;
+    letter-spacing: 0.06em;
+    color: #252525;
+}
+.notification .last-seen-cover {
+    top: 27px;
+    right: 24px;
+}
+.notification .last-seen {
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 13px;
+    color: #414141;
+}
+.notification .title-cover {
+    left: 17.3px;
+    top: 55px;
+}
+.notification .title {
+    font-weight: bold;
+    font-size: 15px;
+    line-height: 17px;
+    color: #252525;
+}
+.notification .description-cover {
+    left: 17.3px;
+    top: 78px;
+}
+.notification .description {
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 15px;
+    color: #414141;
+}
+.larapush-notification {
+    -webkit-animation: float_img 18s ease infinite;
+    animation: float_img 18s ease infinite;
+    width: 350px;
+    left: 40px;
+    top: 230px;
+}
+
+
+
+
+@keyframes  float_img {
+    0% {
+      transform: translateY(-5px)
+    }
+
+    20% {
+      transform: translateY(5px)
+    }
+
+    40% {
+      transform: translateY(-5px)
+    }
+
+    70% {
+      transform: translateY(5px)
+    }
+
+    to {
+      transform: translateY(-5px)
+    }
+  }

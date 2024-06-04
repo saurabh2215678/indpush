@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import styles from "../App.css";
 
 const Home = () => {
     return (
@@ -218,6 +219,15 @@ const Home = () => {
             </div>
             </div>
             </div>
+
+
+
+            <div className={`row`}>
+     
+      <button className="button-primary" data-toggle="modal" data-target="#demoModal">
+        View Demo Right Away!
+      </button>
+    </div>
             
 
 
