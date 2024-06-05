@@ -74,10 +74,14 @@ body{font-family: 'Inter', sans-serif;}
 
   .button-primary {
       border: 0;
-      background: linear-gradient(167deg, #2b87ff, #0067f5);
+      background: linear-gradient(167deg, #666, #000);
       color: #fff;
       font-family: "Inter", sans-serif;
       border-radius: 100px;
       padding: 10px 30px;
       outline: none;
   }
+  section{padding: 5rem 0;}
+  h2{font-size: 2rem;font-family: "Inter", sans-serif;
+    font-weight: bold;
+    color: var(--dark);}

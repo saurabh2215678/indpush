@@ -1,10 +1,13 @@
 import React from "react";
-import styles from "./Banner.css";
+import "./Banner.css";
 
 const Banner = () => {
   return (
     <section>
       <div className="container">
+      <div class="hero-element">
+        <img loading="lazy" src="/images/top-element.svg" alt="design-element" height="100px" width="100px"/>
+      </div>
         <div className="row">
           <div className="col-md-6">
             <div className="left-box">
@@ -20,7 +23,7 @@ const Banner = () => {
             </div>
           </div>
 
-          <div className="col-md-6 d-flex justify-content-center">
+          <div className="col-md-6 d-flex justify-content-center ht_550">
             <div className="w_350">
               <div className="hero-images position-relative">
                 <img src="https://larapush.com/assets/iphone.webp" className="position-absolute iphone" alt="Hero Image" />

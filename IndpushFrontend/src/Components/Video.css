@@ -1,0 +1,13 @@
+ .box_video{    background: #d8e9fe;
+    max-width: 100%;
+    width: 800px;
+    border: 15px solid #d8e9fe;
+    border-radius: 15px;
+    z-index: 998;    position: relative;
+    margin: 0 auto 20px auto;
+    cursor: pointer;
+    overflow: hidden;
+    .bg-video{
+        img{width: 100%;}
+    }
+}
