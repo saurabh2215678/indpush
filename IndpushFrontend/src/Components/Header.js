@@ -53,7 +53,7 @@ const Header = () => {
                 </div>
             </div>
             <div className="container">
-                <div className="d-flex justify-content-between py-4 align-items-center mb-4">
+                <div className="d-flex justify-content-between py-4 align-items-center mb-4 mt-5">
                     <Link to="/" className="d-block my-0 font-weight-normal logo" aria-label="Logo">
                         <img src="images/logo.png" style={{ width: "60%" }} alt="Logo" />
                     </Link>

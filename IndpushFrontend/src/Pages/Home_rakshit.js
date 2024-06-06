@@ -1,8 +1,8 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import Header from "../Components/Header";
 import Banner from "../Components/Banner";
 import Video from "../Components/Video";
+import Brand from "../Components/Brands";
 
 const Home = () =>{
     return(
@@ -10,6 +10,7 @@ const Home = () =>{
             <Header />  
             <Banner />
             <Video />
+            <Brand />
         </>
     )
 }

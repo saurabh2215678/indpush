@@ -3,7 +3,7 @@ import "./Banner.css";
 
 const Banner = () => {
   return (
-    <section>
+    <section className="position-relative">
       <div className="container">
       <div class="hero-element">
         <img loading="lazy" src="/images/top-element.svg" alt="design-element" height="100px" width="100px"/>
